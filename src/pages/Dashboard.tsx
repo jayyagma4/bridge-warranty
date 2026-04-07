@@ -45,7 +45,7 @@ const Dashboard = () => {
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">{user?.email}</span>
             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">
-              {primaryRole.replace("_", " ")}
+              {primaryRole.replace(/_/g, " ")}
             </span>
             <button onClick={signOut} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Sign Out
@@ -61,7 +61,7 @@ const Dashboard = () => {
         <div className="grid md:grid-cols-3 gap-6">
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="text-sm text-muted-foreground mb-1">Role</div>
-            <div className="text-2xl font-display font-bold text-foreground capitalize">{primaryRole.replace("_", " ")}</div>
+            <div className="text-2xl font-display font-bold text-foreground capitalize">{primaryRole.replace(/_/g, " ")}</div>
           </div>
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="text-sm text-muted-foreground mb-1">Email</div>
@@ -70,7 +70,7 @@ const Dashboard = () => {
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="text-sm text-muted-foreground mb-1">Status</div>
             <div className="text-lg font-medium text-foreground flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full" /> Active
+              <span className="w-2 h-2 bg-chart-3 rounded-full" /> Active
             </div>
           </div>
         </div>
