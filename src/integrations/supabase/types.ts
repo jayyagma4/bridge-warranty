@@ -14,16 +14,417 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contracts: {
+        Row: {
+          contract_price: number | null
+          created_at: string
+          created_by: string
+          customer_email: string | null
+          customer_first_name: string
+          customer_last_name: string
+          customer_phone: string | null
+          dealer_cost: number | null
+          dealership_id: string
+          end_date: string | null
+          id: string
+          product_id: string
+          provider_id: string
+          start_date: string | null
+          status: string
+          updated_at: string
+          vehicle_make: string
+          vehicle_mileage: number | null
+          vehicle_model: string
+          vehicle_vin: string
+          vehicle_year: number
+        }
+        Insert: {
+          contract_price?: number | null
+          created_at?: string
+          created_by: string
+          customer_email?: string | null
+          customer_first_name: string
+          customer_last_name: string
+          customer_phone?: string | null
+          dealer_cost?: number | null
+          dealership_id: string
+          end_date?: string | null
+          id?: string
+          product_id: string
+          provider_id: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_make: string
+          vehicle_mileage?: number | null
+          vehicle_model: string
+          vehicle_vin: string
+          vehicle_year: number
+        }
+        Update: {
+          contract_price?: number | null
+          created_at?: string
+          created_by?: string
+          customer_email?: string | null
+          customer_first_name?: string
+          customer_last_name?: string
+          customer_phone?: string | null
+          dealer_cost?: number | null
+          dealership_id?: string
+          end_date?: string | null
+          id?: string
+          product_id?: string
+          provider_id?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_make?: string
+          vehicle_mileage?: number | null
+          vehicle_model?: string
+          vehicle_vin?: string
+          vehicle_year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dealership_members: {
+        Row: {
+          created_at: string
+          dealership_id: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dealership_id: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dealership_id?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealership_members_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dealerships: {
+        Row: {
+          address: string | null
+          admin_code: string
+          compliance_info: Json | null
+          created_at: string
+          id: string
+          license_number: string | null
+          name: string
+          phone: string | null
+          province: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          admin_code?: string
+          compliance_info?: Json | null
+          created_at?: string
+          id?: string
+          license_number?: string | null
+          name: string
+          phone?: string | null
+          province?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          admin_code?: string
+          compliance_info?: Json | null
+          created_at?: string
+          id?: string
+          license_number?: string | null
+          name?: string
+          phone?: string | null
+          province?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          coverage_details: Json | null
+          created_at: string
+          description: string | null
+          eligibility_rules: Json | null
+          id: string
+          name: string
+          pricing: Json | null
+          provider_id: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          coverage_details?: Json | null
+          created_at?: string
+          description?: string | null
+          eligibility_rules?: Json | null
+          id?: string
+          name: string
+          pricing?: Json | null
+          provider_id: string
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          coverage_details?: Json | null
+          created_at?: string
+          description?: string | null
+          eligibility_rules?: Json | null
+          id?: string
+          name?: string
+          pricing?: Json | null
+          provider_id?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      provider_members: {
+        Row: {
+          created_at: string
+          id: string
+          provider_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          provider_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          provider_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_members_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      providers: {
+        Row: {
+          address: string | null
+          company_name: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          regions_served: string[] | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          company_name: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          regions_served?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          company_name?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          regions_served?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      remittances: {
+        Row: {
+          amount: number
+          contract_id: string
+          created_at: string
+          due_date: string
+          id: string
+          paid_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          contract_id: string
+          created_at?: string
+          due_date: string
+          id?: string
+          paid_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          contract_id?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          paid_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remittances_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_dealership_member: {
+        Args: { _dealership_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_provider_member: {
+        Args: { _provider_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "super_admin"
+        | "dealership_admin"
+        | "dealership_employee"
+        | "provider"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +551,13 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "super_admin",
+        "dealership_admin",
+        "dealership_employee",
+        "provider",
+      ],
+    },
   },
 } as const
