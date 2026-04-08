@@ -1,87 +1,97 @@
 
 
-# Product Finder & Comparison Page
+# Product Coverage Detail Page
 
 ## What we're building
 
-A dedicated **Find Products** page (accessible from the dealership dashboard sidebar) that mirrors the layout in your screenshot — a professional product search and comparison tool where dealership users can:
+A dedicated **Product Coverage** component/page that displays a single product's coverage details in a professional, branded chart format — inspired by the A-Protect reference image but designed with Bridge Warranty's own identity (blue/gold palette, Plus Jakarta Sans headings, Inter body).
 
-1. **Search by vehicle** — Enter VIN, mileage; decode vehicle details
-2. **Filter & sort** — By product type, provider, price
-3. **Browse eligible products** — Grouped by provider, displayed as cards with pricing, coverage duration, deductible, and a "View" button
-4. **Compare plans side-by-side** — Select multiple products and compare features in a table
+This is a reusable template that can be shown for any product, displaying:
+- Product name, provider, tier, and per-claim range at the top
+- A two-section table: **Powertrain Coverage** and **Additional Options**
+- Each row shows a coverage item with a checkmark (included), a red dot (not included), or a blue dot (term-specific)
+- Legend explaining the symbols
+- Bridge Warranty branding at the bottom
 
-## Layout (reference: your screenshot)
+## Layout
 
 ```text
-┌─────────────────────────────────────────────────────┐
-│  Sidebar (existing DashboardLayout)                 │
-│  + "Find Products" nav item                         │
-├─────────────────────────────────────────────────────┤
-│  MAIN CONTENT                                       │
-│  ┌──────────────────────┐  ┌──────────────────────┐ │
-│  │ Vehicle & Deal Info  │  │ Filters & Sorting    │ │
-│  │ VIN input + Decode   │  │ Product type dropdown│ │
-│  │ Mileage input        │  │ Sort by dropdown     │ │
-│  └──────────────────────┘  │ Provider dropdown    │ │
-│  ┌──────────────────────┐  │ Active filter chips  │ │
-│  │ GAP Insurance Details│  └──────────────────────┘ │
-│  │ Loan amount input    │                           │
-│  │ Compare Plans button │                           │
-│  └──────────────────────┘                           │
-│  ┌──────────────────────┐                           │
-│  │ Vehicle Summary      │                           │
-│  │ Year/Make/Model/Trim │                           │
-│  └──────────────────────┘                           │
-│                                                     │
-│  Eligible Products (grouped by provider)            │
-│  ┌──────────────────────────────────────────┐       │
-│  │ Provider Name — N plans          [logo]  │       │
-│  │ ┌────────┐ ┌────────┐ ┌────────┐         │       │
-│  │ │Plan Card│ │Plan Card│ │Plan Card│       │       │
-│  │ │Type     │ │Type     │ │Type     │       │       │
-│  │ │Duration │ │Duration │ │Duration │       │       │
-│  │ │Deductib.│ │Deductib.│ │Deductib.│       │       │
-│  │ │$Price   │ │$Price   │ │$Price   │       │       │
-│  │ │[View]   │ │[View]   │ │[View]   │       │       │
-│  │ └────────┘ └────────┘ └────────┘         │       │
-│  └──────────────────────────────────────────┘       │
-│  (repeat for each provider)                         │
-│                                                     │
-│  ── Compare Modal/Sheet ──                          │
-│  Side-by-side table of selected products            │
-│  Rows: Coverage, Duration, Deductible, Price, etc.  │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│  BW Logo          BRIDGE WARRANTY               │
+│                                                 │
+│  EXTENDED WARRANTY COVERAGE PLANS               │
+│  [Product Name] — [Provider Name]               │
+│  $X,XXX - $XX,XXX Per Claim                     │
+│                                                 │
+│  ┌─────────┐                                    │
+│  │ Legend   │  ✓ Included  ● Not Included       │
+│  │          │  ◉ Term/Coverage Specific          │
+│  └─────────┘                                    │
+│                                                 │
+│  POWERTRAIN COVERAGE                            │
+│  ┌──────────────────────┬───────────┐           │
+│  │ Engine               │    ✓      │           │
+│  │ Transmission         │    ✓      │           │
+│  │ Transfer Case/4x4    │    ✓      │           │
+│  │ Turbo/Supercharger   │    ●      │           │
+│  │ Differential         │    ✓      │           │
+│  │ ...                  │    ...    │           │
+│  └──────────────────────┴───────────┘           │
+│                                                 │
+│  ADDITIONAL OPTIONS                             │
+│  ┌──────────────────────┬───────────┐           │
+│  │ Air Conditioning     │    ✓      │           │
+│  │ Brakes               │    ●      │           │
+│  │ ...                  │    ...    │           │
+│  └──────────────────────┴───────────┘           │
+│                                                 │
+│  Footer disclaimer + BW branding                │
+└─────────────────────────────────────────────────┘
 ```
 
 ## Implementation steps
 
-### 1. Create the Find Products page (`src/pages/dealership/FindProducts.tsx`)
-- **Search section**: VIN input with Decode/Reset buttons, mileage input
-- **GAP section**: Loan amount input, "Compare Plans" button
-- **Vehicle Summary**: Displays decoded vehicle info (year, make, model, trim, powertrain)
-- **Filters sidebar** (right column): Product type, sort-by, provider dropdowns + active filter chips with clear-all
-- **Product cards**: Grouped by provider with horizontal scrollable rows of plan cards showing type, duration/km, deductible, price, and View button
-- **Compare modal**: Sheet/dialog with a comparison table when user selects multiple products
+### 1. Create `src/components/dealership/ProductCoverageChart.tsx`
+- Accepts a product object (or product ID) as prop
+- Renders the branded coverage chart with the layout above
+- Coverage items are defined as a static list of all possible features (Engine, Transmission, etc.)
+- The product's `coverage_details` JSONB field maps which items are included/not/term-specific
+- Uses Bridge Warranty colors: deep blue header, gold accents, clean white rows with alternating subtle gray stripes
 
-### 2. Add route and nav item
-- Add `/dealership/find-products` route in `App.tsx` (protected for dealership roles)
-- Add "Find Products" to `dealershipNavItems` in `DashboardLayout.tsx`
+### 2. Create route and integrate
+- Add `/dealership/product-coverage/:id` route in `App.tsx` (public like find-products)
+- Also add a "View Coverage" button on the FindProducts page product cards that links/opens this view
+- Can also be rendered in a Sheet/Dialog from the FindProducts page
 
-### 3. Data layer
-- Fetch products from existing `products` table (grouped by `provider_id`)
-- Fetch providers for names/logos
-- Client-side filtering by type, provider, and sorting by price
-- VIN decode will be a placeholder/mock for now (no external API needed)
+### 3. Design details
+- Header: Deep navy gradient with product name in white, gold accent line
+- Legend box: Light cream/gold background with icon explanations
+- Table: Clean rows with subtle alternating backgrounds, generous padding
+- Icons: Custom SVG checkmark (blue/teal), red circle for not included, blue dot for term-specific
+- Section headers ("Powertrain Coverage", "Additional Options") as bold navy dividers
+- Footer: Small disclaimer text + BW logo
+- Fully responsive — stacks cleanly on mobile
 
-### 4. Compare feature
-- Checkbox selection on product cards
-- Floating "Compare (N)" button when 2+ selected
-- Opens a full-width sheet with a feature comparison table
+### 4. Data structure
+Uses the existing `coverage_details` JSONB on the `products` table. Expected shape:
+```json
+{
+  "powertrain": {
+    "engine": "included",
+    "transmission": "included",
+    "turbo_supercharger": "not_included"
+  },
+  "additional": {
+    "air_conditioning": "term_specific",
+    "brakes": "not_included"
+  },
+  "claim_range": "$1,000 - $10,000"
+}
+```
+If coverage_details is empty/null, all items show as "not_included" by default. No DB migration needed — just uses existing JSONB field.
 
 ## Technical notes
-- Uses existing `products` and `providers` tables — no database changes needed
-- Products use `pricing` (jsonb) for price/deductible, `coverage_details` (jsonb) for duration/km
-- All within the existing `DashboardLayout` wrapper
-- Responsive: cards stack on mobile, horizontal scroll on tablet
+- No database changes required
+- Reusable component that works for any product
+- Mock/fallback data for products without coverage_details populated yet
 
