@@ -36,6 +36,7 @@ const MOCK_COVERAGE: Record<string, any> = {
 
 const ProductCoverage = () => {
   const { id } = useParams<{ id: string }>();
+  const isValidId = !!id && id !== ":id" && id.length > 8;
 
   const { data: product, isLoading: productLoading } = useQuery({
     queryKey: ["product-coverage", id],
@@ -48,7 +49,7 @@ const ProductCoverage = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
+    enabled: isValidId,
   });
 
   const { data: provider } = useQuery({
@@ -65,7 +66,7 @@ const ProductCoverage = () => {
     enabled: !!product?.provider_id,
   });
 
-  if (productLoading) {
+  if (productLoading && isValidId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
@@ -73,15 +74,29 @@ const ProductCoverage = () => {
     );
   }
 
+  // Show mock/demo chart when no valid product ID or product not found
   if (!product) {
+    const demoName = product ? (product as any).name : "Powertrain Plus Coverage";
+    const demoProvider = "A-Protect Warranty Corporation";
+
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <p className="text-muted-foreground">Product not found.</p>
-        <Button asChild variant="outline">
-          <Link to="/dealership/find-products">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Products
-          </Link>
-        </Button>
+      <div className="min-h-screen bg-muted/30 py-8 px-4">
+        <div className="max-w-2xl mx-auto mb-6 flex items-center justify-between">
+          <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+            <Link to="/dealership/find-products">
+              <ArrowLeft className="w-4 h-4" /> Back to Products
+            </Link>
+          </Button>
+          {!isValidId && (
+            <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">Demo Preview</span>
+          )}
+        </div>
+        <ProductCoverageChart
+          productName={demoName}
+          providerName={demoProvider}
+          productType="Extended Warranty"
+          coverageDetails={MOCK_COVERAGE}
+        />
       </div>
     );
   }
