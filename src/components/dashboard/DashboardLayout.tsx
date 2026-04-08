@@ -141,6 +141,7 @@ export const adminNavItems: NavItem[] = [
 
 export const dealershipNavItems: NavItem[] = [
   { label: "Overview", href: "/dealership", icon: LayoutDashboard },
+  { label: "Find Products", href: "/dealership/find-products", icon: Package },
   { label: "Contracts", href: "/dealership/contracts", icon: FileText },
   { label: "Staff", href: "/dealership/staff", icon: Users },
   { label: "Providers", href: "/dealership/providers", icon: Shield },

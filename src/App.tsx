@@ -16,6 +16,7 @@ import AdminDealerships from "./pages/admin/AdminDealerships";
 import AdminProviders from "./pages/admin/AdminProviders";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminContracts from "./pages/admin/AdminContracts";
+import FindProducts from "./pages/dealership/FindProducts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,9 @@ const App = () => (
             <Route path="/admin/providers" element={<ProtectedRoute allowedRoles={["super_admin"]}><AdminProviders /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute allowedRoles={["super_admin"]}><AdminUsers /></ProtectedRoute>} />
             <Route path="/admin/contracts" element={<ProtectedRoute allowedRoles={["super_admin"]}><AdminContracts /></ProtectedRoute>} />
+
+            {/* Dealership */}
+            <Route path="/dealership/find-products" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><FindProducts /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
