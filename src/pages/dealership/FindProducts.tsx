@@ -343,11 +343,6 @@ const FindProducts = () => {
                               >
                                 Coverage <ChevronRight className="w-3 h-3" />
                               </Button>
-                                  setViewProduct(product);
-                                }}
-                              >
-                                View <ChevronRight className="w-3 h-3" />
-                              </Button>
                             </div>
                           </div>
                         );
