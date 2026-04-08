@@ -60,6 +60,7 @@ const App = () => (
 
             {/* Dealership */}
             <Route path="/dealership/find-products" element={<FindProducts />} />
+            <Route path="/dealership/product-coverage/:id" element={<ProductCoverage />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
