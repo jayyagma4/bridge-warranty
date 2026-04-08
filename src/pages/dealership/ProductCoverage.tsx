@@ -36,6 +36,7 @@ const MOCK_COVERAGE: Record<string, any> = {
 
 const ProductCoverage = () => {
   const { id } = useParams<{ id: string }>();
+  const isValidId = !!id && id !== ":id" && id.length > 8;
 
   const { data: product, isLoading: productLoading } = useQuery({
     queryKey: ["product-coverage", id],
@@ -48,7 +49,7 @@ const ProductCoverage = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
+    enabled: isValidId,
   });
 
   const { data: provider } = useQuery({
