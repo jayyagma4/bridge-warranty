@@ -338,6 +338,11 @@ const FindProducts = () => {
                                 className="text-xs gap-1 text-primary"
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  navigate(`/dealership/product-coverage/${product.id}`);
+                                }}
+                              >
+                                Coverage <ChevronRight className="w-3 h-3" />
+                              </Button>
                                   setViewProduct(product);
                                 }}
                               >
