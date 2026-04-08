@@ -26,6 +26,7 @@ import {
   Gauge,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface VehicleInfo {
   year: number;
@@ -47,6 +48,7 @@ const mockDecodeVin = (vin: string): VehicleInfo | null => {
 };
 
 const FindProducts = () => {
+  const navigate = useNavigate();
   const [vin, setVin] = useState("");
   const [mileage, setMileage] = useState("");
   const [loanAmount, setLoanAmount] = useState("");
@@ -336,10 +338,10 @@ const FindProducts = () => {
                                 className="text-xs gap-1 text-primary"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setViewProduct(product);
+                                  navigate(`/dealership/product-coverage/${product.id}`);
                                 }}
                               >
-                                View <ChevronRight className="w-3 h-3" />
+                                Coverage <ChevronRight className="w-3 h-3" />
                               </Button>
                             </div>
                           </div>
