@@ -48,6 +48,7 @@ const mockDecodeVin = (vin: string): VehicleInfo | null => {
 };
 
 const FindProducts = () => {
+  const navigate = useNavigate();
   const [vin, setVin] = useState("");
   const [mileage, setMileage] = useState("");
   const [loanAmount, setLoanAmount] = useState("");
