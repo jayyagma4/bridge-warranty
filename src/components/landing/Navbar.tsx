@@ -49,6 +49,16 @@ const Navbar = () => {
           >
             Home
           </Link>
+          <Link
+            to="/brochure"
+            className={`text-sm font-medium transition-colors ${
+              scrolled
+                ? "text-muted-foreground hover:text-foreground"
+                : "text-white/70 hover:text-white"
+            }`}
+          >
+            Coverage Brochure
+          </Link>
           {user ? (
             <Button onClick={() => navigate("/dashboard")} size="sm">
               Dashboard
