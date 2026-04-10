@@ -9,9 +9,22 @@ import type { StepProps } from "./types";
 const TermPricingStep = ({ state, updateState, onNext, onBack }: StepProps) => {
   const plan = useMemo(() => getPlanBySlug(state.selectedPlanSlug || ""), [state.selectedPlanSlug]);
 
-  if (!plan) return null;
+  const tiers = plan?.pricingTiers ?? [];
 
-  const tiers = plan.pricingTiers;
+  const selectedTier = state.selectedTierIndex !== null && tiers[state.selectedTierIndex] ? tiers[state.selectedTierIndex] : null;
+
+  // Get base price for selected term
+  const basePrice = useMemo(() => {
+    if (!selectedTier || state.selectedTermIndex === null) return null;
+    if (selectedTier.mileageBands) {
+      return selectedTier.mileageBands[0]?.values[state.selectedTermIndex] ?? null;
+    }
+    const baseRow = selectedTier.rows.find(r => r.label === "Base Price");
+    const val = baseRow?.values[state.selectedTermIndex];
+    return typeof val === "number" ? val : null;
+  }, [selectedTier, state.selectedTermIndex]);
+
+  if (!plan) return null;
 
   const handleTierSelect = (tierIndex: number) => {
     updateState({ selectedTierIndex: tierIndex, selectedTermIndex: null, selectedAddOns: [] });
