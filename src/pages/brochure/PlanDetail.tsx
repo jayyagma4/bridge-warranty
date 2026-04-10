@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Check, Shield, Wrench, ChevronDown, DollarSign, Clock, Gauge } from "lucide-react";
@@ -6,13 +6,22 @@ import BrochureHeader from "@/components/brochure/BrochureHeader";
 import CoverageAccordion from "@/components/brochure/CoverageAccordion";
 import PricingTable from "@/components/brochure/PricingTable";
 import BenefitsSection from "@/components/brochure/BenefitsSection";
-import { getPlanBySlug } from "@/data/warrantyPlans";
-import { useState } from "react";
+import { getPlanBySlug, getPlansByGroup } from "@/data/warrantyPlans";
+import { useState, useMemo } from "react";
 
 const PlanDetail = () => {
   const { planSlug } = useParams<{ planSlug: string }>();
+  const navigate = useNavigate();
   const plan = getPlanBySlug(planSlug || "");
   const [activeSection, setActiveSection] = useState<"overview" | "coverage" | "pricing" | "benefits">("overview");
+
+  // Get sibling plans if this plan is in a group
+  const groupPlans = useMemo(() => {
+    if (!plan?.group) return null;
+    return getPlansByGroup(plan.group);
+  }, [plan?.group]);
+
+  const isGrouped = groupPlans && groupPlans.length > 1;
 
   if (!plan) {
     return (
@@ -29,28 +38,20 @@ const PlanDetail = () => {
   }
 
   const hasPricing = plan.pricingTiers.length > 0;
+  const groupName = isGrouped ? plan.name.replace(` ${plan.tier}`, "") : plan.name;
 
-  // Calculate price range from all tiers
+  // Calculate price range
   const allBasePrices: number[] = [];
   plan.pricingTiers.forEach(tier => {
-    // Check mileage bands first (Diamond Plus style)
     if (tier.mileageBands) {
-      tier.mileageBands.forEach(band => {
-        band.values.forEach(v => allBasePrices.push(v));
-      });
+      tier.mileageBands.forEach(band => band.values.forEach(v => allBasePrices.push(v)));
     } else {
       const baseRow = tier.rows.find(r => r.label === "Base Price");
-      if (baseRow) {
-        baseRow.values.forEach(v => {
-          if (typeof v === "number") allBasePrices.push(v);
-        });
-      }
+      if (baseRow) baseRow.values.forEach(v => { if (typeof v === "number") allBasePrices.push(v); });
     }
   });
   const minPrice = allBasePrices.length > 0 ? Math.min(...allBasePrices) : null;
   const maxPrice = allBasePrices.length > 0 ? Math.max(...allBasePrices) : null;
-
-  // Count total term options across all tiers
   const totalTermOptions = plan.pricingTiers.reduce((sum, t) => sum + t.terms.length, 0);
 
   const sections = [
@@ -65,7 +66,7 @@ const PlanDetail = () => {
       <BrochureHeader />
 
       {/* Hero header */}
-      <section className="pt-16 bg-gradient-to-br from-[hsl(var(--primary)/0.95)] via-[hsl(var(--primary)/0.85)] to-[hsl(var(--primary)/0.75)] text-white">
+      <section className="pt-16 bg-gradient-to-br from-[hsl(225,80%,15%)] via-[hsl(225,70%,20%)] to-[hsl(225,60%,25%)] text-white">
         <div className="container mx-auto px-4 py-10 md:py-14">
           <Button asChild variant="ghost" size="sm" className="text-white/60 hover:text-white hover:bg-white/10 mb-6 -ml-2">
             <Link to="/brochure">
@@ -79,21 +80,45 @@ const PlanDetail = () => {
                 <Badge className="bg-accent/20 text-accent border-accent/30">
                   {plan.provider}
                 </Badge>
-                {plan.tier && (
+                {plan.tier && !isGrouped && (
                   <Badge className="bg-white/10 text-white border-white/20">{plan.tier}</Badge>
                 )}
                 {!plan.premiumFees && (
                   <Badge className="bg-green-500/20 text-green-300 border-green-500/30">$0 Premium Fees</Badge>
                 )}
               </div>
-              <h1 className="font-display text-3xl md:text-4xl font-bold">{plan.name}</h1>
-              <p className="text-white/50 mt-2 text-sm">{plan.eligibility}</p>
+
+              <h1 className="font-display text-3xl md:text-4xl font-bold">
+                {isGrouped ? groupName : plan.name}
+              </h1>
+
+              {/* Tier toggle tabs for grouped plans */}
+              {isGrouped && (
+                <div className="flex items-center gap-1 mt-4 bg-white/10 rounded-lg p-1 w-fit">
+                  {groupPlans.map(gp => (
+                    <button
+                      key={gp.slug}
+                      onClick={() => navigate(`/brochure/${gp.slug}`, { replace: true })}
+                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+                        gp.slug === plan.slug
+                          ? "bg-accent text-[#0f1b3d] shadow-md"
+                          : "text-white/60 hover:text-white hover:bg-white/10"
+                      }`}
+                    >
+                      {gp.tier}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-white/50 mt-3 text-sm">{plan.eligibility}</p>
 
               {/* Quick price summary */}
               {minPrice !== null && maxPrice !== null && (
                 <div className="mt-4 flex items-baseline gap-2">
                   <span className="text-accent font-display text-2xl font-bold">
-                    ${minPrice.toLocaleString()} – ${maxPrice.toLocaleString()}
+                    ${minPrice.toLocaleString()}
+                    {maxPrice !== minPrice && ` – $${maxPrice.toLocaleString()}`}
                   </span>
                   <span className="text-white/40 text-sm">starting price range</span>
                 </div>
@@ -127,7 +152,7 @@ const PlanDetail = () => {
                 <>
                   <div className="bg-white/10 rounded-lg px-5 py-3 min-w-[140px]">
                     <p className="text-[10px] text-white/40 uppercase tracking-wider">Claim Tiers</p>
-                    <p className="font-bold text-white text-lg">{plan.pricingTiers.length} options</p>
+                    <p className="font-bold text-white text-lg">{plan.pricingTiers.length} option{plan.pricingTiers.length > 1 ? "s" : ""}</p>
                   </div>
                   <div className="bg-white/10 rounded-lg px-5 py-3 min-w-[140px]">
                     <p className="text-[10px] text-white/40 uppercase tracking-wider">Term Options</p>
@@ -184,7 +209,6 @@ const PlanDetail = () => {
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {plan.pricingTiers.map((tier, i) => {
-                    // Get the price range for this tier
                     const tierPrices: number[] = [];
                     if (tier.mileageBands) {
                       tier.mileageBands.forEach(b => b.values.forEach(v => tierPrices.push(v)));
@@ -227,7 +251,7 @@ const PlanDetail = () => {
                           </p>
                           {addOnCount > 0 && (
                             <p className="text-[10px] text-accent font-medium">
-                              + {addOnCount} add-on option{addOnCount > 1 ? "s" : ""} available
+                              + {addOnCount} add-on{addOnCount > 1 ? "s" : ""} available
                             </p>
                           )}
                         </div>
@@ -238,15 +262,12 @@ const PlanDetail = () => {
               </div>
             )}
 
-            {/* Coverage summary cards */}
+            {/* Coverage summary */}
             <div>
-              <h2 className="font-display text-xl font-bold text-foreground mb-2">
-                Coverage Overview
-              </h2>
+              <h2 className="font-display text-xl font-bold text-foreground mb-2">Coverage Overview</h2>
               <p className="text-sm text-muted-foreground mb-6">
-                This plan covers {plan.includedCoverage.length} component categories. Click "What's Covered" for detailed parts lists.
+                This plan covers {plan.includedCoverage.length} component categories.
               </p>
-
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="rounded-xl border bg-card p-5">
                   <div className="flex items-center gap-2 mb-4">
@@ -258,27 +279,15 @@ const PlanDetail = () => {
                   <div className="space-y-2">
                     {plan.coverageDetails
                       .filter(c => ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger"].includes(c.name))
-                      .map(cat => {
-                        const isIncluded = plan.includedCoverage.some(c =>
-                          c.toLowerCase().includes(cat.name.toLowerCase()) ||
-                          cat.name.toLowerCase().includes(c.toLowerCase())
-                        );
-                        return (
-                          <div key={cat.name} className="flex items-start gap-2">
-                            {isIncluded ? (
-                              <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                            ) : (
-                              <span className="w-4 h-4 flex items-center justify-center text-muted-foreground shrink-0 mt-0.5">—</span>
-                            )}
-                            <div>
-                              <p className={`text-sm font-medium ${isIncluded ? "text-foreground" : "text-muted-foreground"}`}>
-                                {cat.name}
-                              </p>
-                              <p className="text-xs text-muted-foreground line-clamp-2">{cat.parts.substring(0, 120)}…</p>
-                            </div>
+                      .map(cat => (
+                        <div key={cat.name} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{cat.name}</p>
+                            <p className="text-xs text-muted-foreground line-clamp-2">{cat.parts.substring(0, 120)}…</p>
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                   </div>
                 </div>
 
@@ -315,10 +324,7 @@ const PlanDetail = () => {
                         );
                       })}
                     {plan.coverageDetails.filter(c => !["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger"].includes(c.name)).length > 8 && (
-                      <button
-                        onClick={() => setActiveSection("coverage")}
-                        className="text-xs text-primary font-medium hover:underline flex items-center gap-1 mt-2"
-                      >
+                      <button onClick={() => setActiveSection("coverage")} className="text-xs text-primary font-medium hover:underline flex items-center gap-1 mt-2">
                         View all coverage details <ChevronDown className="h-3 w-3" />
                       </button>
                     )}
@@ -327,15 +333,11 @@ const PlanDetail = () => {
               </div>
             </div>
 
-            {/* Benefits preview */}
+            {/* Benefits */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display text-xl font-bold text-foreground">
-                  Included Benefits
-                </h2>
-                <Button variant="outline" size="sm" onClick={() => setActiveSection("benefits")}>
-                  View All
-                </Button>
+                <h2 className="font-display text-xl font-bold text-foreground">Included Benefits</h2>
+                <Button variant="outline" size="sm" onClick={() => setActiveSection("benefits")}>View All</Button>
               </div>
               <BenefitsSection benefits={plan.benefits} />
             </div>
@@ -344,45 +346,26 @@ const PlanDetail = () => {
 
         {activeSection === "coverage" && (
           <div className="space-y-6">
-            <div>
-              <h2 className="font-display text-xl font-bold text-foreground mb-2">
-                What's Covered
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                Click any category below to see the full list of covered components and parts.
-              </p>
-              <CoverageAccordion
-                categories={plan.coverageDetails}
-                includedCoverage={plan.includedCoverage}
-              />
-            </div>
+            <h2 className="font-display text-xl font-bold text-foreground mb-2">What's Covered</h2>
+            <p className="text-sm text-muted-foreground mb-6">Click any category to see covered components and parts.</p>
+            <CoverageAccordion categories={plan.coverageDetails} includedCoverage={plan.includedCoverage} />
           </div>
         )}
 
         {activeSection === "pricing" && hasPricing && (
           <div className="space-y-6">
-            <div>
-              <h2 className="font-display text-xl font-bold text-foreground mb-2">
-                Pricing & Options
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                All pricing tiers shown below. Base prices are highlighted — add-on options are listed beneath each tier.
-              </p>
-              <PricingTable plan={plan} />
-            </div>
+            <h2 className="font-display text-xl font-bold text-foreground mb-2">Pricing & Options</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Base prices are highlighted — add-on options are listed beneath each tier.
+            </p>
+            <PricingTable plan={plan} />
           </div>
         )}
 
         {activeSection === "benefits" && (
           <div className="space-y-6">
-            <div>
-              <h2 className="font-display text-xl font-bold text-foreground mb-4">
-                Included Benefits
-              </h2>
-              <BenefitsSection benefits={plan.benefits} />
-            </div>
-
-            {/* Free diagnostics callout */}
+            <h2 className="font-display text-xl font-bold text-foreground mb-4">Included Benefits</h2>
+            <BenefitsSection benefits={plan.benefits} />
             <div className="rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 p-6">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
@@ -391,7 +374,7 @@ const PlanDetail = () => {
                 <div>
                   <h3 className="font-display font-bold text-foreground">FREE Diagnostics Included</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Receive a free 20 min visual, scan and road test at an A-Protect Authorized Repair Centre. Pre-approval required. See Terms and Conditions for more information.
+                    Receive a free 20 min visual, scan and road test at an A-Protect Authorized Repair Centre.
                   </p>
                 </div>
               </div>
