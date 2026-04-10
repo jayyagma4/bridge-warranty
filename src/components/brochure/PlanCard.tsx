@@ -48,23 +48,26 @@ const PlanCard = ({ plan, groupPlans, isSelected, onToggleCompare }: PlanCardPro
   // Link to the first plan in the group (PlanDetail handles tier toggle)
   const linkSlug = plan.slug;
 
-  const salesTagStyles: Record<string, { badge: string; ring: string; glow: string; icon: string }> = {
-    popular: { badge: "bg-amber-500 text-white", ring: "ring-2 ring-amber-400/40", glow: "shadow-[0_0_20px_rgba(245,158,11,0.15)]", icon: "🔥" },
-    value: { badge: "bg-emerald-500 text-white", ring: "ring-2 ring-emerald-400/40", glow: "shadow-[0_0_20px_rgba(16,185,129,0.15)]", icon: "💎" },
-    pick: { badge: "bg-primary text-primary-foreground", ring: "ring-2 ring-primary/40", glow: "shadow-[0_0_20px_hsl(225,80%,56%,0.15)]", icon: "⭐" },
+  const salesTagStyles: Record<string, { badge: string; ring: string; glow: string; icon: string; scale: boolean }> = {
+    popular: { badge: "bg-amber-500 text-white", ring: "ring-2 ring-amber-400/50", glow: "shadow-[0_0_30px_rgba(245,158,11,0.25)]", icon: "🔥", scale: true },
+    value: { badge: "bg-emerald-500 text-white", ring: "ring-2 ring-emerald-400/40", glow: "shadow-[0_0_20px_rgba(16,185,129,0.15)]", icon: "💎", scale: false },
+    pick: { badge: "bg-primary text-primary-foreground", ring: "ring-2 ring-primary/50", glow: "shadow-[0_0_30px_hsl(225,80%,56%,0.25)]", icon: "⭐", scale: true },
   };
   const tagStyle = plan.salesTag ? salesTagStyles[plan.salesTag.type] : null;
+  const isPromoted = tagStyle?.scale;
 
   return (
-    <Card className={`group relative overflow-hidden border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 bg-card flex flex-col ${tagStyle ? `${tagStyle.ring} ${tagStyle.glow}` : ""}`}>
+    <Card className={`group relative overflow-hidden border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 bg-card flex flex-col ${tagStyle ? `${tagStyle.ring} ${tagStyle.glow}` : ""} ${isPromoted ? "sm:scale-[1.03] sm:z-10" : ""}`}>
       {/* Sales tag badge */}
       {plan.salesTag && tagStyle && (
-        <div className={`absolute -top-0 right-4 z-10 px-3 py-1 rounded-b-lg text-xs font-bold ${tagStyle.badge} animate-pulse`}>
-          {tagStyle.icon} {plan.salesTag.label}
+        <div className={`absolute -top-0 left-0 right-0 z-10 flex justify-center`}>
+          <div className={`px-4 py-1.5 rounded-b-lg text-xs font-bold ${tagStyle.badge} ${isPromoted ? "text-sm px-5 py-2" : ""}`}>
+            {tagStyle.icon} {plan.salesTag.label}
+          </div>
         </div>
       )}
       {/* Top accent bar */}
-      <div className="h-1 bg-gradient-to-r from-primary to-accent" />
+      <div className={`h-1 ${tagStyle ? "h-0" : "bg-gradient-to-r from-primary to-accent"}`} />
 
       <CardContent className="p-5 space-y-3 flex-1 flex flex-col">
         {/* Provider + tier badges */}
