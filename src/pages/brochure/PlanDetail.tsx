@@ -60,6 +60,7 @@ const PlanDetail = () => {
     { key: "coverage" as const, label: "What's Covered" },
     ...(hasPricing ? [{ key: "pricing" as const, label: "Pricing & Options" }] : []),
     { key: "benefits" as const, label: "Benefits" },
+    { key: "fine-print" as const, label: "Terms & Conditions" },
   ];
 
   return (
