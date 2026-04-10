@@ -37,6 +37,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, navItems, t
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    // Auto-expand groups that contain the current page
+    const map: Record<string, boolean> = {};
+    navItems.forEach((item) => {
+      if (item.children) {
+        const isChildActive = item.children.some((c) => location.pathname === c.href);
+        if (isChildActive) map[item.label] = true;
+      }
+    });
+    return map;
+  });
   const primaryRole = roles[0]?.role || "unknown";
 
   const handleSignOut = async () => {
