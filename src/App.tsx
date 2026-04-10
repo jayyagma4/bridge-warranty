@@ -18,6 +18,13 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminContracts from "./pages/admin/AdminContracts";
 import FindProducts from "./pages/dealership/FindProducts";
 import ProductCoverage from "./pages/dealership/ProductCoverage";
+import DealershipOverview from "./pages/dealership/DealershipOverview";
+import DealershipContracts from "./pages/dealership/DealershipContracts";
+import DealershipRemittances from "./pages/dealership/DealershipRemittances";
+import DealershipReporting from "./pages/dealership/DealershipReporting";
+import Configuration from "./pages/dealership/settings/Configuration";
+import TeamManagement from "./pages/dealership/settings/TeamManagement";
+import DealerProfile from "./pages/dealership/settings/Profile";
 import BrochureHome from "./pages/brochure/BrochureHome";
 import PlanDetail from "./pages/brochure/PlanDetail";
 import ComparePlans from "./pages/brochure/ComparePlans";
@@ -64,8 +71,15 @@ const App = () => (
             <Route path="/admin/contracts" element={<ProtectedRoute allowedRoles={["super_admin"]}><AdminContracts /></ProtectedRoute>} />
 
             {/* Dealership */}
-            <Route path="/dealership/find-products" element={<FindProducts />} />
-            <Route path="/dealership/product-coverage/:id" element={<ProductCoverage />} />
+            <Route path="/dealership" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><DealershipOverview /></ProtectedRoute>} />
+            <Route path="/dealership/find-products" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><FindProducts /></ProtectedRoute>} />
+            <Route path="/dealership/product-coverage/:id" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><ProductCoverage /></ProtectedRoute>} />
+            <Route path="/dealership/contracts" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><DealershipContracts /></ProtectedRoute>} />
+            <Route path="/dealership/remittances" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><DealershipRemittances /></ProtectedRoute>} />
+            <Route path="/dealership/reporting" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><DealershipReporting /></ProtectedRoute>} />
+            <Route path="/dealership/settings/configuration" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><Configuration /></ProtectedRoute>} />
+            <Route path="/dealership/settings/team" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><TeamManagement /></ProtectedRoute>} />
+            <Route path="/dealership/settings/profile" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><DealerProfile /></ProtectedRoute>} />
 
             {/* Brochure */}
             <Route path="/brochure" element={<BrochureHome />} />
