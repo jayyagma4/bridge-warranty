@@ -389,6 +389,17 @@ const PlanDetail = () => {
             </div>
           </div>
         )}
+
+        {activeSection === "fine-print" && (
+          <div className="space-y-6">
+            <h2 className="font-display text-xl font-bold text-foreground mb-4">Terms, Conditions & Exclusions</h2>
+            <FinePrintSection
+              importantNotes={plan.importantNotes}
+              planExclusions={plan.planExclusions}
+              premiumVehicleFee={plan.premiumVehicleFee}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
