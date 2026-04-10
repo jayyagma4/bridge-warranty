@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Plus, Check } from "lucide-react";
 import type { PricingTier, WarrantyPlan } from "@/data/warrantyPlans";
 
 interface PricingTableProps {
@@ -14,20 +14,31 @@ const formatPrice = (val: number | string | null) => {
   return <span>{val}</span>;
 };
 
-const PricingTierTable = ({ tier }: { tier: PricingTier }) => {
+const PricingTierTable = ({ tier, tierIndex }: { tier: PricingTier; tierIndex: number }) => {
+  const baseRow = tier.rows.find(r => r.label === "Base Price");
+  const addOnRows = tier.rows.filter(r => r.label !== "Base Price");
+  const hasMileageBands = tier.mileageBands && tier.mileageBands.length > 0;
+
   return (
     <div className="rounded-xl border bg-card overflow-hidden">
-      {/* Tier header — brochure-style large claim amount */}
-      <div className="bg-gradient-to-r from-[#0f1b3d] to-[#1a3066] px-5 py-4 flex items-center justify-between">
-        <div>
-          <span className="font-display font-bold text-2xl text-white">
-            ${tier.perClaimAmount.toLocaleString()}
-          </span>
-          <span className="text-white/60 text-sm ml-2">Per Claim</span>
+      {/* Tier header */}
+      <div className="bg-gradient-to-r from-[hsl(225,80%,15%)] to-[hsl(225,70%,25%)] px-5 py-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-3">
+            <span className="font-display font-bold text-2xl text-white">
+              ${tier.perClaimAmount.toLocaleString()}
+            </span>
+            <span className="text-white/50 text-sm">Per Claim</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-white/15 text-white/80 border-white/20 text-xs">
+              ${tier.deductible} Deductible
+            </Badge>
+            <Badge className="bg-white/10 text-white/60 border-white/15 text-xs">
+              {tier.terms.length} term{tier.terms.length > 1 ? "s" : ""}
+            </Badge>
+          </div>
         </div>
-        <Badge className="bg-white/15 text-white/80 border-white/20 text-xs">
-          ${tier.deductible} Deductible
-        </Badge>
       </div>
 
       {/* Pricing table */}
@@ -36,43 +47,79 @@ const PricingTierTable = ({ tier }: { tier: PricingTier }) => {
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="text-xs font-semibold text-muted-foreground min-w-[160px]">
-                Option
+                &nbsp;
               </TableHead>
               {tier.terms.map((t, i) => (
                 <TableHead key={i} className="text-center min-w-[110px]">
-                  <div className="text-xs font-semibold text-foreground">{t.label.split("\n")[0] || t.label}</div>
-                  <div className="text-[10px] text-muted-foreground font-normal">{t.km}</div>
+                  <div className="text-xs font-bold text-foreground">
+                    {t.months} Mo
+                  </div>
+                  <div className="text-[10px] text-muted-foreground font-normal">
+                    {t.km} km
+                  </div>
                 </TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {/* Mileage bands for Diamond Plus */}
-            {tier.mileageBands?.map((band, bi) => (
-              <TableRow key={`band-${bi}`} className="bg-primary/5 hover:bg-primary/10 border-b">
-                <TableCell className="font-semibold text-xs text-foreground">{band.label}</TableCell>
-                {band.values.map((v, vi) => (
-                  <TableCell key={vi} className="text-center text-sm font-bold text-primary">
-                    ${v.toLocaleString()}
+            {/* Mileage bands (Diamond Plus) */}
+            {hasMileageBands && (
+              <>
+                <TableRow className="bg-primary/5">
+                  <TableCell colSpan={tier.terms.length + 1} className="py-1.5">
+                    <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+                      Base Price by Vehicle Mileage
+                    </span>
                   </TableCell>
+                </TableRow>
+                {tier.mileageBands!.map((band, bi) => (
+                  <TableRow key={`band-${bi}`} className="bg-primary/5 hover:bg-primary/10 border-b">
+                    <TableCell className="font-semibold text-xs text-foreground">
+                      {band.label}
+                    </TableCell>
+                    {band.values.map((v, vi) => (
+                      <TableCell key={vi} className="text-center text-sm font-bold text-primary">
+                        ${v.toLocaleString()}
+                      </TableCell>
+                    ))}
+                  </TableRow>
                 ))}
-              </TableRow>
-            ))}
-            
-            {/* Base price row — highlighted */}
-            {tier.rows.filter(r => r.label === "Base Price").map((row, ri) => (
-              <TableRow key={ri} className="bg-accent/5 border-b-2 border-accent/20">
-                <TableCell className="font-bold text-sm text-foreground">Base Price</TableCell>
-                {row.values.map((v, vi) => (
+              </>
+            )}
+
+            {/* Base price row — only if no mileage bands */}
+            {!hasMileageBands && baseRow && (
+              <TableRow className="bg-accent/5 border-b-2 border-accent/20">
+                <TableCell className="font-bold text-sm text-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <Check className="h-3.5 w-3.5 text-primary" />
+                    Base Price
+                  </div>
+                </TableCell>
+                {baseRow.values.map((v, vi) => (
                   <TableCell key={vi} className="text-center text-base font-bold text-foreground">
                     {formatPrice(v)}
                   </TableCell>
                 ))}
               </TableRow>
-            ))}
+            )}
+
+            {/* Add-on section header */}
+            {addOnRows.length > 0 && (
+              <TableRow>
+                <TableCell colSpan={tier.terms.length + 1} className="py-1.5 bg-muted/30">
+                  <div className="flex items-center gap-1.5">
+                    <Plus className="h-3 w-3 text-accent" />
+                    <span className="text-[10px] font-semibold text-accent uppercase tracking-wider">
+                      Available Add-Ons
+                    </span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
 
             {/* Add-on rows */}
-            {tier.rows.filter(r => r.label !== "Base Price").map((row, ri) => (
+            {addOnRows.map((row, ri) => (
               <TableRow
                 key={ri}
                 className={`hover:bg-muted/30 transition-colors ${
@@ -106,9 +153,8 @@ const PricingTierTable = ({ tier }: { tier: PricingTier }) => {
 const PricingTable = ({ plan }: PricingTableProps) => {
   return (
     <div className="space-y-6">
-      {/* All tiers stacked — brochure-style */}
       {plan.pricingTiers.map((tier, i) => (
-        <PricingTierTable key={i} tier={tier} />
+        <PricingTierTable key={i} tier={tier} tierIndex={i} />
       ))}
       
       {plan.premiumVehicleFee && <PremiumVehicleFeeNotice makes={plan.premiumVehicleFee.makes} />}
