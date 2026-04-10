@@ -92,22 +92,28 @@ const PlanDetail = () => {
                 {isGrouped ? groupName : plan.name}
               </h1>
 
-              {/* Tier toggle tabs for grouped plans */}
+              {/* Tier toggle buttons for grouped plans */}
               {isGrouped && (
-                <div className="flex items-center gap-1 mt-4 bg-white/10 rounded-lg p-1 w-fit">
-                  {groupPlans.map(gp => (
-                    <button
-                      key={gp.slug}
-                      onClick={() => navigate(`/brochure/${gp.slug}`, { replace: true })}
-                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
-                        gp.slug === plan.slug
-                          ? "bg-accent text-[#0f1b3d] shadow-md"
-                          : "text-white/60 hover:text-white hover:bg-white/10"
-                      }`}
-                    >
-                      {gp.tier}
-                    </button>
-                  ))}
+                <div className="flex flex-wrap items-center gap-2 mt-5">
+                  {groupPlans.map(gp => {
+                    const isActive = gp.slug === plan.slug;
+                    return (
+                      <button
+                        key={gp.slug}
+                        onClick={() => navigate(`/brochure/${gp.slug}`, { replace: true })}
+                        className={`px-6 py-3 rounded-lg text-sm font-bold transition-all border-2 ${
+                          isActive
+                            ? "bg-accent text-[#0f1b3d] border-accent shadow-lg shadow-accent/30 scale-105"
+                            : "bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40"
+                        }`}
+                      >
+                        <span className="block text-base">{gp.tier}</span>
+                        <span className={`block text-[11px] mt-0.5 font-medium ${isActive ? "text-[#0f1b3d]/70" : "text-white/50"}`}>
+                          {gp.claimRange}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
