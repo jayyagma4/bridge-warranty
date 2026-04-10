@@ -1,4 +1,4 @@
-// Tire and Rim Protection data from page 18-19 of the A-Protect brochure
+// Tire and Rim Protection data from page 18-19 of the A-Protect brochure V25
 
 export interface TireRimTier {
   name: string;
@@ -13,18 +13,87 @@ export interface VehicleClass {
   makes: string[];
 }
 
+export interface CoveredService {
+  name: string;
+  description: string;
+  subItems?: string[];
+  tiers: string[]; // which tier slugs include this service
+}
+
+export interface EligibilityCondition {
+  label: string;
+  detail: string;
+}
+
+export const eligibilityConditions: EligibilityCondition[] = [
+  {
+    label: "Vehicle Age",
+    detail: "Available on vehicles 10 years or newer.",
+  },
+  {
+    label: "Commercial Use",
+    detail: "Not eligible for commercial business use.",
+  },
+  {
+    label: "Claim Limits",
+    detail: "Maximum limits apply. Please see the Terms and Conditions for a complete list of coverage and limitations.",
+  },
+];
+
+export const disclaimers: string[] = [
+  "This is not a Contract. Please see the Terms and Conditions of the Tire and Rim Protection Agreement.",
+  "Please see the Terms and Conditions for more information.",
+];
+
 export const vehicleClasses: VehicleClass[] = [
   {
     classNumber: 1,
-    makes: ["Buick", "Chevrolet (except Corvette)", "Chrysler", "Dodge (except Viper)", "Ford (except GT350)", "GMC", "Honda", "Hyundai", "Jeep", "Kia", "Mitsubishi", "Nissan", "Subaru", "Toyota", "Volkswagen"],
+    makes: [
+      "Buick",
+      "Chevrolet (except Corvette)",
+      "Chrysler",
+      "Dodge (except Viper)",
+      "Ford (except GT350)",
+      "GMC",
+      "Honda",
+      "Hyundai",
+      "Jeep",
+      "Kia",
+      "Mitsubishi",
+      "Nissan",
+      "Subaru",
+      "Toyota",
+      "Volkswagen",
+    ],
   },
   {
     classNumber: 2,
-    makes: ["Acura", "Cadillac", "Hummer", "Infiniti", "Jaguar", "Land Rover", "Lexus", "Lincoln", "Saab", "Volvo"],
+    makes: [
+      "Acura",
+      "Cadillac",
+      "Hummer",
+      "Infiniti",
+      "Jaguar",
+      "Land Rover",
+      "Lexus",
+      "Lincoln",
+      "Saab",
+      "Volvo",
+    ],
   },
   {
     classNumber: 3,
-    makes: ["Audi", "BMW", "Mercedes", "MINI", "Range Rover", "Maserati", "Porsche", "Dodge Viper", "Alfa Romeo"],
+    makes: [
+      "Audi",
+      "BMW",
+      "Mercedes",
+      "MINI",
+      "Range Rover",
+      "Maserati",
+      "Porsche",
+      "Dodge Viper",
+      "Alfa Romeo",
+    ],
   },
 ];
 
@@ -90,37 +159,73 @@ export const tireRimTiers: TireRimTier[] = [
   },
 ];
 
-export const coveredServices = [
+export const coveredServices: CoveredService[] = [
   {
     name: "Tire/Wheel/Rim Repair and Replacement",
-    description: "Flat tire replacement, tire replacement (if rendered unserviceable), wheels (rims) repair or replacement if unable to seal with its tire, cosmetic wheel repair (for alloy wheels) due to damage from street curbs.",
+    description:
+      "Provided that the damage is solely as a result of a road hazard, A-Protect will cover the reasonable costs incurred for the following services:",
+    subItems: [
+      "Flat Tire Replacement",
+      "Tire Replacement (if rendered unserviceable)",
+      "Wheels (Rims) repair or replacement if unable to seal with its tire",
+      "Cosmetic Wheel Repair (for alloy wheels) due to damage from street curbs",
+    ],
+    tiers: ["essential", "extended", "superior"],
   },
   {
     name: "Tire/Wheel/Rim Mounting & Balancing",
-    description: "Mounting, balancing, valve stems and tire disposal for covered tires. Excludes: Shop supplies, unspecified charges.",
+    description:
+      "For the covered tires under this Agreement, A-Protect will cover the costs of mounting, balancing, valve stems and tire disposal. Excludes: Shop supplies, unspecified charges.",
+    tiers: ["essential", "extended", "superior"],
   },
   {
     name: "Roadside Coverage",
-    description: "Reimbursement up to $100/occurrence for: towing, winching, flat tire change, fuel delivery (excludes fuel cost), battery boost, lockout services (excludes locksmith). Up to 3 service calls per 12-month period.",
+    description:
+      "For the registered vehicle, A-Protect will reimburse the Customer up to $100.00 per occurrence for roadside assistance charges incurred for the following services:",
+    subItems: [
+      "Towing — To the nearest A-Protect Authorized Repair Facility or service centre capable of performing tire and rim repair/replacement services",
+      "Winching",
+      "Flat Tire Change (installation with inflated spare)",
+      "Fuel Delivery (excludes the cost of fuel)",
+      "Battery Boost",
+      "Lockout services (excluding locksmith costs)",
+    ],
+    tiers: ["essential", "extended", "superior"],
   },
   {
     name: "Key & Remote Replacement",
-    description: "If the original key is lost, stolen or destroyed, coverage up to $800/year or $1,600 term maximum. Prior approval required.",
+    description:
+      "If the original key is lost, stolen or destroyed, A-Protect will cover up to the maximum of $800.00 (per covered year) or $1,600.00 for the term maximum. All key replacements must be authorized by A-Protect and prior approval must be obtained before any replacements are made.",
+    tiers: ["extended", "superior"],
   },
   {
     name: "Car Rental",
-    description: "Reimbursement up to $70/day for car rental if covered repairs exceed 1 business day. Prior approval and valid receipts required.",
+    description:
+      "For covered mechanical breakdowns and if the repairs exceed one (1) business day, A-Protect will reimburse the Customer up to $70.00 per day (CAD). Prior approval must be obtained and valid receipts must be presented at the time of the claim.",
+    tiers: ["extended", "superior"],
   },
   {
     name: "Windshield, Headlight & Tail Light Lens Repair",
-    description: "Repair of minor chips and cracks for windshield, headlight and taillight lenses as a direct result of road objects such as propelled rocks or debris.",
+    description:
+      "For the repairs of minor chips and cracks for windshield, headlight and taillight lenses as a direct result of damage due to road objects, such as propelled rocks or debris (wood, metal pieces/parts).",
+    tiers: ["superior"],
   },
   {
     name: "Paintless Dent Repair",
-    description: "Dent repairs up to 5 cm in diameter and scratches up to 30 cm in length on external body panels/parts due to public lot damage.",
+    description:
+      "A-Protect will cover dent repairs up to 5 cm (centimetres) in diameter and scratches up to 30 cm in length on external body panels/parts due to damage caused as a direct result of public lot damage.",
+    tiers: ["superior"],
   },
   {
     name: "Rip/Tear/Burn Puncture",
-    description: "Repair of accidental rips, tears, burns, or punctures up to 3 cm in length for the upholstered seats of the covered vehicle.",
+    description:
+      "For the repair of accidental rips, tears, burns, or punctures up to 3 cm in length for the upholstered seats of the Covered vehicle.",
+    tiers: ["superior"],
   },
+];
+
+export const roadsideCoverageConditions: string[] = [
+  "Roadside coverage includes up to three (3) service calls within a twelve (12) month period.",
+  "Limited to one (1) service call within a twenty-four (24) hour period.",
+  "Valid receipts are required for reimbursement.",
 ];
