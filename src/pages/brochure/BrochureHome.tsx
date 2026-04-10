@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Shield, BarChart3, ShoppingCart } from "lucide-react";
+import { ArrowRight, Shield, BarChart3, ShoppingCart, ChevronRight, Check } from "lucide-react";
 import BrochureHeader from "@/components/brochure/BrochureHeader";
 import PlanCard from "@/components/brochure/PlanCard";
 import { getGroupedPlans, getPlansByGroup } from "@/data/warrantyPlans";
@@ -142,34 +142,50 @@ const BrochureHome = () => {
           </div>
 
           <div className="grid sm:grid-cols-3 gap-5">
-            {tireRimTiers.map(tier => (
-              <div
-                key={tier.slug}
-                className={`rounded-lg border bg-card p-5 space-y-3 relative ${
-                  tier.bestValue ? "ring-2 ring-accent shadow-lg" : ""
-                }`}
-              >
-                {tier.bestValue && (
-                  <Badge className="absolute -top-2.5 right-4 bg-accent text-[#0f1b3d] font-semibold">
-                    Best Value
-                  </Badge>
-                )}
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                  <h3 className="font-display font-bold text-foreground">{tier.name}</h3>
+            {tireRimTiers.map(tier => {
+              const minPrice = Math.min(...tier.pricing.map(p => p.class1));
+              const maxPrice = Math.max(...tier.pricing.map(p => p.class3));
+              return (
+                <div
+                  key={tier.slug}
+                  className={`rounded-lg border bg-card p-5 space-y-3 relative transition-all hover:shadow-md ${
+                    tier.bestValue ? "ring-2 ring-accent shadow-lg" : "hover:border-primary/30"
+                  }`}
+                >
+                  {tier.bestValue && (
+                    <Badge className="absolute -top-2.5 right-4 bg-accent text-[#0f1b3d] font-semibold">
+                      Best Value
+                    </Badge>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    <h3 className="font-display font-bold text-foreground">{tier.name}</h3>
+                  </div>
+
+                  <ul className="space-y-1.5">
+                    {tier.includes.map((item, i) => (
+                      <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                        <Check className="h-3 w-3 text-primary mt-0.5 shrink-0" /> {item}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="pt-2 border-t border-border/50">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Starting from</p>
+                    <p className="font-display font-bold text-xl text-primary">${minPrice.toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      Range: ${minPrice.toLocaleString()} – ${maxPrice.toLocaleString()}
+                    </p>
+                  </div>
+
+                  <Button asChild size="sm" className="w-full gap-1">
+                    <Link to={`/brochure/tire-rim?tier=${tier.slug}`}>
+                      View Details <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
                 </div>
-                <ul className="space-y-1">
-                  {tier.includes.map((item, i) => (
-                    <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                      <span className="text-primary mt-0.5">✓</span> {item}
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-sm font-semibold text-foreground">
-                  From ${Math.min(...tier.pricing.map(p => p.class1)).toLocaleString()}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
