@@ -21,7 +21,7 @@ const DealershipComparePlans = () => {
           </p>
         </div>
 
-        <ComparisonMatrix />
+        <ComparisonMatrix basePath="/dealership/plans" />
 
         <p className="text-xs text-muted-foreground italic">
           * "Top Up Warranty" is an add-on that extends your coverage from one tier to another.

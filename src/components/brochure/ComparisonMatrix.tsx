@@ -5,6 +5,7 @@ import { coverageMatrix, PLAN_COLUMNS, type CoverageStatus, type PlanColumn } fr
 
 interface ComparisonMatrixProps {
   selectedPlanKeys?: string[];
+  basePath?: string;
 }
 
 const StatusIcon = ({ status }: { status: CoverageStatus }) => {
@@ -32,7 +33,7 @@ const StatusIcon = ({ status }: { status: CoverageStatus }) => {
   }
 };
 
-const PlanHeader = ({ col }: { col: PlanColumn }) => {
+const PlanHeader = ({ col, basePath = "/brochure" }: { col: PlanColumn; basePath?: string }) => {
   // Map column keys to plan detail slugs
   const slugMap: Record<string, string> = {
     powertrain: "powertrain-bronze",
@@ -46,7 +47,7 @@ const PlanHeader = ({ col }: { col: PlanColumn }) => {
   return (
     <TableHead key={col.key} className="text-center p-0 min-w-[120px]">
       <Link
-        to={`/brochure/${slugMap[col.key] || col.key}`}
+        to={`${basePath}/${slugMap[col.key] || col.key}`}
         className="block p-3 hover:opacity-90 transition-opacity"
         style={{ backgroundColor: col.color }}
       >
@@ -82,7 +83,7 @@ const PlanHeader = ({ col }: { col: PlanColumn }) => {
   );
 };
 
-const ComparisonMatrix = ({ selectedPlanKeys }: ComparisonMatrixProps) => {
+const ComparisonMatrix = ({ selectedPlanKeys, basePath = "/brochure" }: ComparisonMatrixProps) => {
   const columns = selectedPlanKeys
     ? PLAN_COLUMNS.filter(c => selectedPlanKeys.includes(c.key))
     : PLAN_COLUMNS;
@@ -114,7 +115,7 @@ const ComparisonMatrix = ({ selectedPlanKeys }: ComparisonMatrixProps) => {
             <TableRow>
               <TableHead className="min-w-[180px] sticky left-0 z-10 bg-card" />
               {columns.map(col => (
-                <PlanHeader key={col.key} col={col} />
+                <PlanHeader key={col.key} col={col} basePath={basePath} />
               ))}
             </TableRow>
           </TableHeader>

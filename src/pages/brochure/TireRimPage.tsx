@@ -2,10 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Shield, Check, Star, Info, AlertTriangle, CircleCheck } from "lucide-react";
-import BrochureHeader, { useDealerMode } from "@/components/brochure/BrochureHeader";
+import BrochureHeader from "@/components/brochure/BrochureHeader";
 import {
   tireRimTiers,
   vehicleClasses,
@@ -16,7 +14,6 @@ import {
 } from "@/data/tireRimPlans";
 
 const TireRimPage = () => {
-  const dealerMode = useDealerMode();
   const [activeTier, setActiveTier] = useState("essential");
 
   return (
@@ -87,46 +84,6 @@ const TireRimPage = () => {
             </div>
           ))}
         </div>
-
-        {/* Pricing */}
-        {dealerMode && (
-          <div className="space-y-6">
-            <h2 className="font-display text-xl font-bold text-foreground">Pricing</h2>
-            <Tabs value={activeTier} onValueChange={setActiveTier}>
-              <TabsList>
-                {tireRimTiers.map(t => (
-                  <TabsTrigger key={t.slug} value={t.slug} className="text-xs">{t.name}</TabsTrigger>
-                ))}
-              </TabsList>
-              {tireRimTiers.map(tier => (
-                <TabsContent key={tier.slug} value={tier.slug}>
-                  <div className="rounded-lg border overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-[#0f1b3d]">
-                          <TableHead className="text-white/80 text-xs font-medium">Term</TableHead>
-                          <TableHead className="text-white/80 text-xs font-medium text-center">Class 1</TableHead>
-                          <TableHead className="text-white/80 text-xs font-medium text-center">Class 2</TableHead>
-                          <TableHead className="text-white/80 text-xs font-medium text-center">Class 3</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {tier.pricing.map((row, i) => (
-                          <TableRow key={i} className="hover:bg-muted/50">
-                            <TableCell className="text-xs font-medium text-foreground">{row.term}</TableCell>
-                            <TableCell className="text-center text-sm font-semibold">${row.class1.toLocaleString()}</TableCell>
-                            <TableCell className="text-center text-sm font-semibold">${row.class2.toLocaleString()}</TableCell>
-                            <TableCell className="text-center text-sm font-semibold">${row.class3.toLocaleString()}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </TabsContent>
-              ))}
-            </Tabs>
-          </div>
-        )}
 
         {/* Vehicle classes */}
         <div className="space-y-4">

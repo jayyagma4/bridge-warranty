@@ -1,20 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 const BrochureHeader = () => {
-  const [dealerMode, setDealerMode] = useState(() => {
-    return localStorage.getItem("bw-dealer-mode") === "true";
-  });
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-
-  useEffect(() => {
-    localStorage.setItem("bw-dealer-mode", String(dealerMode));
-    window.dispatchEvent(new CustomEvent("dealer-mode-change", { detail: dealerMode }));
-  }, [dealerMode]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -58,19 +49,12 @@ const BrochureHeader = () => {
         </nav>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
-            {dealerMode ? (
-              <Unlock className="h-3.5 w-3.5 text-accent" />
-            ) : (
-              <Lock className="h-3.5 w-3.5 text-white/40" />
-            )}
-            <span className="text-xs text-white/70 hidden sm:inline">Pricing</span>
-            <Switch
-              checked={dealerMode}
-              onCheckedChange={setDealerMode}
-              className="scale-75 data-[state=checked]:bg-accent"
-            />
-          </div>
+          <Link
+            to="/sign-in"
+            className="text-sm text-white/60 hover:text-white transition-colors font-medium"
+          >
+            Dealer Login
+          </Link>
           <button
             className="md:hidden text-white"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -103,19 +87,3 @@ const BrochureHeader = () => {
 };
 
 export default BrochureHeader;
-
-export const useDealerMode = () => {
-  const [dealerMode, setDealerMode] = useState(() => {
-    return localStorage.getItem("bw-dealer-mode") === "true";
-  });
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      setDealerMode((e as CustomEvent).detail);
-    };
-    window.addEventListener("dealer-mode-change", handler);
-    return () => window.removeEventListener("dealer-mode-change", handler);
-  }, []);
-
-  return dealerMode;
-};

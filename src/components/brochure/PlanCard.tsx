@@ -7,15 +7,15 @@ import type { WarrantyPlan } from "@/data/warrantyPlans";
 
 interface PlanCardProps {
   plan: WarrantyPlan;
-  /** If this plan belongs to a group, all sibling plans */
   groupPlans?: WarrantyPlan[] | null;
   isSelected?: boolean;
   onToggleCompare?: (slug: string) => void;
-  /** Base path for plan detail links, defaults to "/brochure" */
   basePath?: string;
+  /** Whether to show pricing info. Defaults to true */
+  showPricing?: boolean;
 }
 
-const PlanCard = ({ plan, groupPlans, isSelected, onToggleCompare, basePath = "/brochure" }: PlanCardProps) => {
+const PlanCard = ({ plan, groupPlans, isSelected, onToggleCompare, basePath = "/brochure", showPricing = true }: PlanCardProps) => {
   const isGrouped = groupPlans && groupPlans.length > 1;
 
   // For grouped plans, show combined info
@@ -103,7 +103,7 @@ const PlanCard = ({ plan, groupPlans, isSelected, onToggleCompare, basePath = "/
               ))}
             </div>
           )}
-          {priceRange && (
+          {showPricing && priceRange && (
             <p className="text-sm font-semibold text-primary mt-1.5">{priceRange}</p>
           )}
         </div>
