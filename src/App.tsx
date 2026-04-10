@@ -22,6 +22,7 @@ import BrochureHome from "./pages/brochure/BrochureHome";
 import PlanDetail from "./pages/brochure/PlanDetail";
 import ComparePlans from "./pages/brochure/ComparePlans";
 import TireRimPage from "./pages/brochure/TireRimPage";
+import PurchaseWizard from "./pages/purchase/PurchaseWizard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
