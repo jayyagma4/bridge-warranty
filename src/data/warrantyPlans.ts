@@ -783,6 +783,13 @@ export const warrantyPlans: WarrantyPlan[] = [
     highlights: ["Rideshare & delivery vehicles", "Seals & Gaskets included", "Wear & Tear included", "30 min free diagnostics"],
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Roadside Coverage", "Trip Interruption", "Alternator/Starter/Solenoid", "Water Pump", "Seals & Gaskets", "Wear & Tear"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Seals & Gaskets", "Wear & Tear"].includes(c.name))],
+    importantNotes: [
+      "Designed specifically for rideshare (Uber, Lyft) and delivery (DoorDash, Skip, etc.) vehicles.",
+      "Vehicle must be 10 years or newer and up to 180,000 km at time of purchase.",
+      "Free diagnostics is extended to 30 minutes (vs. 20 min standard) at A-Protect Authorized Repair Centre.",
+      "\"Add extra 10,000 km\" option available on 24-month and 36-month terms for additional coverage distance.",
+      "12-month terms include Unlimited km at no extra cost.",
+    ],
     benefits: [
       ...SHARED_BENEFITS.filter(b => b.name !== "Free Diagnostics"),
       { name: "Free Diagnostics", description: "Free 30 min visual, scan and road test at A-Protect Authorized Repair Centre.", limit: "Included" },
