@@ -853,6 +853,16 @@ export const warrantyPlans: WarrantyPlan[] = [
       { name: "Diesel Components", parts: "Fuel pumps, injection & distribution pumps, diesel exhaust fluid (DEF) tank, diesel exhaust fluid (DEF) heater, sending unit, fuel injectors, fuel rails, fuel hard lines, pressure regulator, vacuum pump, high pressure oil pump, high pressure injection pump, glow plugs, glow plug harness, glow plug controller, pump mounted driver module and diesel nitrogen oxygen (NOx) sensor." },
       { name: "GPS & Tech Package", parts: "Back up camera, digital display/gps monitor (including touchscreen), bluetooth/handsfree module, gps control module, power door lock keypad, keyless entry door handle sensor, keyless entry/remote door lock receiver, touchscreen interface module, parking assist module and sensors, tire pressure monitoring system module, wi-fi/mobile data control module." },
     ],
+    importantNotes: [
+      "Designed for light-duty commercial trucks and vans.",
+      "Includes Diesel Components coverage: fuel pumps, injection pumps, DEF tank/heater, glow plugs/harness/controller, high pressure oil pump, and NOx sensor.",
+      "GPS & Tech Package add-on available: includes backup camera, touchscreen/GPS monitor, bluetooth module, parking assist sensors, TPMS module, and wi-fi module.",
+      "Vehicle must be 10 years or newer and up to 200,000 km for the $5,000/claim tier.",
+      "Vehicle must be 8 years or newer and up to 160,000 km for the $10,000/claim tier.",
+      "$10,000/claim tier has a $250 deductible (vs. $100 for the $5,000 tier).",
+      "Free diagnostics is extended to 30 minutes at A-Protect Authorized Repair Centre.",
+      "\"Add extra 10,000 km\" option available on select terms.",
+    ],
     benefits: [
       ...SHARED_BENEFITS.filter(b => b.name !== "Free Diagnostics"),
       { name: "Free Diagnostics", description: "Free 30 min visual, scan and road test at A-Protect Authorized Repair Centre.", limit: "Included" },
