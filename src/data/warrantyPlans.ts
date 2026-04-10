@@ -175,6 +175,12 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Trip Interruption"],
     coverageDetails: POWERTRAIN_COVERAGE_DETAILS,
     benefits: SHARED_BENEFITS.filter(b => !["Roadside Coverage", "Car Rental"].includes(b.name)),
+    importantNotes: [
+      "Light duty commercial vehicles are eligible for Powertrain coverage.",
+      "Powertrain coverage includes internal lubricated parts only.",
+      "Coverage is limited to one claim per covered component during the contract term.",
+      "Turbo/Supercharger coverage applies only to factory-installed units.",
+    ],
     pricingTiers: [{
       perClaimAmount: 750,
       deductible: 100,
