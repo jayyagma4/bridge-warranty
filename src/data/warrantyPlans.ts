@@ -581,6 +581,13 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Roadside Coverage", "Trip Interruption", "Alternator/Starter/Solenoid", "Water Pump", "Air Conditioning", "Brakes", "Cooling System", "Electrical", "Front Suspension", "Fuel System", "Power Steering", "Seals & Gaskets", "Supplementary Parts", "Car Rental", "Wear & Tear"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Air Conditioning", "Brakes", "Cooling System", "Electrical", "Fuel System", "Front Suspension", "Power Steering", "Seals & Gaskets", "Supplementary Parts", "Wear & Tear"].includes(c.name))],
     benefits: SHARED_BENEFITS,
+    importantNotes: [
+      "Most comprehensive standard coverage — includes Brakes, Cooling System, Fuel System, Front Suspension, Power Steering, and Supplementary Parts in the base price.",
+      "Brakes coverage includes master cylinder, calipers, vacuum booster, wheel cylinders, flex hoses, hydraulic lines and fittings, proportioning valve. Excludes ABS brakes.",
+      "Front Suspension includes control arms (upper/lower), control arm bushings, ball joints, and steering knuckles.",
+      "Premium Vehicle Fee applies to $2,500 and $3,000 per-claim tiers.",
+      "Hi-Tech Components and Hybrid Components add-ons available on $2,500/claim tier and above.",
+    ],
     pricingTiers: [
       {
         perClaimAmount: 1000,
