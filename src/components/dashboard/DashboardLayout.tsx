@@ -204,9 +204,16 @@ export const dealershipNavItems: NavItem[] = [
   { label: "Contracts", href: "/dealership/contracts", icon: FileText },
   { label: "Remittances", href: "/dealership/remittances", icon: DollarSign },
   { label: "Reporting", href: "/dealership/reporting", icon: Building2 },
-  { label: "Configuration", href: "/dealership/settings/configuration", icon: Settings },
-  { label: "Team", href: "/dealership/settings/team", icon: Users },
-  { label: "Profile", href: "/dealership/settings/profile", icon: Shield },
+  {
+    label: "Settings",
+    href: "#",
+    icon: Settings,
+    children: [
+      { label: "Configuration", href: "/dealership/settings/configuration", icon: Settings },
+      { label: "Team", href: "/dealership/settings/team", icon: Users },
+      { label: "Profile", href: "/dealership/settings/profile", icon: Shield },
+    ],
+  },
 ];
 
 export const providerNavItems: NavItem[] = [
