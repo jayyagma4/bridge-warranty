@@ -23,6 +23,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
+  children?: NavItem[];
 }
 
 interface DashboardLayoutProps {
