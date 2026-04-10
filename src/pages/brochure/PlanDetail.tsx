@@ -14,7 +14,7 @@ const PlanDetail = () => {
   const { planSlug } = useParams<{ planSlug: string }>();
   const navigate = useNavigate();
   const plan = getPlanBySlug(planSlug || "");
-  const [activeSection, setActiveSection] = useState<"overview" | "coverage" | "pricing" | "benefits">("overview");
+  const [activeSection, setActiveSection] = useState<"overview" | "coverage" | "pricing" | "benefits" | "fine-print">("overview");
 
   // Get sibling plans if this plan is in a group
   const groupPlans = useMemo(() => {
