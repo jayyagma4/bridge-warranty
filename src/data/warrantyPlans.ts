@@ -671,6 +671,16 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Roadside Coverage", "Trip Interruption", "Alternator/Starter/Solenoid", "Water Pump", "Air Conditioning", "Brakes", "Cooling System", "Electrical", "Front & Rear Suspension", "Fuel System", "Hi-Tech Components", "Power Steering", "Seals & Gaskets", "Supplementary Parts", "Car Rental", "Wear & Tear", "Zero Deductible"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Air Conditioning", "Brakes", "Cooling System", "Electrical", "Fuel System", "Front Suspension", "Rear Suspension", "Power Steering", "Seals & Gaskets", "Supplementary Parts", "Wear & Tear", "Hi-Tech Components"].includes(c.name))],
     benefits: SHARED_BENEFITS,
+    importantNotes: [
+      "Zero deductible is included — no additional cost for the $0 deductible.",
+      "Hi-Tech Components coverage is included in the base price.",
+      "Eligibility: Vehicle must be 7 years or newer and up to 160,000 km at time of purchase.",
+      "Pricing is based on current vehicle mileage at time of contract purchase (0–60K, 60K–100K, 100K–160K km bands).",
+      "Front AND Rear Suspension coverage included — both upper and lower control arms, bushings, and ball joints.",
+      "Powertrain PLUS add-on adds extensive engine management, 4x4/drivetrain electronics, ABS, airbag modules, and emission components.",
+      "Hi-Tech ELITE upgrade adds anti-theft module, body control module, sunroof motor, TPMS, keyless entry, and more beyond standard Hi-Tech.",
+      "Premium Vehicle Fee for Diamond Plus does NOT apply to standard Mercedes — only Mercedes AMG models.",
+    ],
     pricingTiers: [
       {
         perClaimAmount: 5000,
