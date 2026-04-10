@@ -1,4 +1,4 @@
-import { Truck, MapPin, Wrench, Car, Shield } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface Benefit {
   name: string;
@@ -10,34 +10,24 @@ interface BenefitsSectionProps {
   benefits: Benefit[];
 }
 
-const iconMap: Record<string, React.ReactNode> = {
-  "Towing": <Truck className="h-5 w-5" />,
-  "Trip Interruption": <MapPin className="h-5 w-5" />,
-  "Roadside Coverage": <Shield className="h-5 w-5" />,
-  "Car Rental": <Car className="h-5 w-5" />,
-  "Free Diagnostics": <Wrench className="h-5 w-5" />,
-};
-
 const BenefitsSection = ({ benefits }: BenefitsSectionProps) => {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2">
       {benefits.map((benefit) => (
         <div
           key={benefit.name}
-          className="rounded-lg border bg-card p-4 space-y-2 hover:shadow-sm transition-shadow"
+          className="rounded-xl border bg-card p-5 flex items-start gap-3.5 hover:shadow-sm transition-shadow"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-              {iconMap[benefit.name] || <Shield className="h-5 w-5" />}
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm text-foreground">{benefit.name}</h4>
-              <span className="text-xs font-medium text-accent">{benefit.limit}</span>
-            </div>
+          <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
+            <Check className="h-4 w-4" />
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {benefit.description}
-          </p>
+          <div className="space-y-1 min-w-0">
+            <h4 className="font-bold text-foreground">{benefit.name}</h4>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {benefit.description}
+            </p>
+            <p className="text-sm font-semibold text-primary">{benefit.limit}</p>
+          </div>
         </div>
       ))}
     </div>
