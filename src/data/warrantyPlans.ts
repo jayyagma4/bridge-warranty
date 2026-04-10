@@ -33,7 +33,89 @@ export interface WarrantyPlan {
     makes: string[];
     note: string;
   };
+  /** Important notes specific to this plan */
+  importantNotes?: string[];
+  /** Specific exclusions for this plan beyond the general ones */
+  planExclusions?: string[];
 }
+
+// ═══════════════════════════════════════════════
+// GENERAL TERMS, CONDITIONS & EXCLUSIONS
+// These apply to ALL A-Protect warranty plans
+// ═══════════════════════════════════════════════
+
+export const GENERAL_TERMS: { heading: string; items: string[] }[] = [
+  {
+    heading: "Coverage Conditions",
+    items: [
+      "Coverage begins on the date of purchase or the date the vehicle is delivered, whichever is later.",
+      "All covered repairs must be performed at an A-Protect Authorized Repair Centre or with prior authorization from A-Protect.",
+      "Coverage is limited to the lesser of the per-claim amount or the actual cost of repair.",
+      "A-Protect reserves the right to inspect any vehicle before or after repairs are made.",
+      "All repairs must use parts of like kind and quality. A-Protect is not obligated to use new or OEM parts.",
+      "The contract holder must present the warranty contract at the time of repair.",
+      "Coverage is non-transferable unless otherwise stated.",
+      "Pre-existing conditions are not covered. Any condition that existed prior to the effective date of the contract is excluded.",
+      "A-Protect is not responsible for any consequential or incidental damages arising from a breakdown.",
+    ],
+  },
+  {
+    heading: "Maintenance Requirements",
+    items: [
+      "The vehicle must be maintained in accordance with the manufacturer's recommended maintenance schedule.",
+      "Failure to maintain the vehicle as recommended by the manufacturer may void coverage.",
+      "Proof of maintenance may be required at the time of a claim. Keep all maintenance records and receipts.",
+      "Oil and filter changes must be performed at intervals not exceeding the manufacturer's recommendations.",
+      "All required fluids must be maintained at proper levels and changed at recommended intervals.",
+    ],
+  },
+  {
+    heading: "Claims Process",
+    items: [
+      "Contact A-Protect at the toll-free number listed on your contract BEFORE any repairs are started.",
+      "Prior authorization is required for all covered repairs. Unauthorized repairs will not be reimbursed.",
+      "The repair facility must provide a complete diagnosis and cost estimate to A-Protect before beginning work.",
+      "A-Protect may require a tear-down inspection to verify the cause of failure. Tear-down costs are covered if the claim is approved.",
+      "Claims must be submitted within 30 days of the repair date.",
+      "Payment is made directly to the repair facility or as reimbursement to the contract holder with valid receipts.",
+    ],
+  },
+  {
+    heading: "Cancellation & Refund",
+    items: [
+      "The contract may be cancelled within 30 days of purchase for a full refund, less any claims paid.",
+      "After 30 days, a pro-rata refund will be issued based on the remaining coverage period, less a $75 administrative fee and any claims paid.",
+      "Refunds are processed within 30 business days of the cancellation request.",
+    ],
+  },
+];
+
+export const GENERAL_EXCLUSIONS: string[] = [
+  "Pre-existing conditions — any condition, defect, or malfunction that existed before the contract effective date.",
+  "Damage caused by accident, collision, fire, theft, vandalism, riot, explosion, lightning, earthquake, freezing, rust, corrosion, or water/flood damage.",
+  "Damage caused by misuse, abuse, negligence, racing, or competition.",
+  "Damage caused by failure to maintain the vehicle in accordance with the manufacturer's recommended maintenance schedule.",
+  "Damage caused by contaminated or improper fuel, fluids, or lubricants.",
+  "Normal maintenance services including but not limited to: tune-ups, spark plugs, filters, belts, hoses, brake pads/shoes/rotors/drums, clutch disc/pressure plate/throw-out bearing, wiper blades, bulbs, fuses, batteries, tires, wheel alignment, exhaust system, and shock absorbers/struts.",
+  "Any repair covered under any manufacturer's warranty, recall, or service campaign.",
+  "Aftermarket, modified, or non-factory-installed parts and any damage caused by their installation or use.",
+  "Commercial use vehicles (except where specifically noted as eligible, e.g., Driver Program, Pro Warranty).",
+  "Vehicles used primarily for towing, plowing, or off-road purposes.",
+  "Cosmetic and appearance items including paint, trim, moldings, bright metal, glass, upholstery, carpet, and weather stripping.",
+  "Damage from environmental conditions including road salt, tree sap, bird droppings, industrial fallout, or sun damage.",
+  "Exhaust system components including catalytic converter, muffler, exhaust pipes, and O2 sensors (unless specifically listed as covered).",
+  "Refrigerant (Freon) and recharge — labour and materials for A/C system recharge are excluded even when A/C components are covered.",
+  "Consequential or incidental damages including loss of use, loss of time, inconvenience, commercial loss, or any other indirect damages.",
+  "Diagnostics charges beyond the covered free diagnostic inspection.",
+  "Axle seals — excluded from Seals & Gaskets coverage.",
+  "ABS brakes — excluded from standard Brakes coverage.",
+];
+
+export const COVERAGE_TERRITORY = "Coverage is valid throughout Canada and the continental United States (including Alaska). Repairs performed outside this territory are not covered.";
+
+export const WAITING_PERIOD = "There is a 30-day and 1,000 km waiting period from the contract effective date before coverage begins. Breakdowns occurring during the waiting period are not covered. The waiting period does not apply to Powertrain Bronze or Powertrain Silver plans with 3-month terms.";
+
+export const DISPUTE_RESOLUTION = "Any dispute arising under or related to this contract shall be resolved through binding arbitration in accordance with applicable provincial/state arbitration laws. The arbitration shall take place in the province/state where the contract was purchased.";
 
 const PREMIUM_MAKES = [
   "BMW", "Mercedes", "Audi", "Tesla", "Porsche", "Jaguar", "Lamborghini",
