@@ -132,6 +132,12 @@ const PlanDetail = () => {
                 </div>
               )}
 
+              <Button asChild size="lg" className="mt-4 bg-accent text-[#0f1b3d] hover:bg-accent/90 font-semibold">
+                <Link to={`/purchase?plan=${plan.slug}`}>
+                  Get a Quote →
+                </Link>
+              </Button>
+
               {/* Included coverage checklist */}
               <div className="mt-6">
                 <p className="text-xs text-white/40 uppercase tracking-wider font-semibold mb-3">Includes</p>

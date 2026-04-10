@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Shield, BarChart3 } from "lucide-react";
+import { ArrowRight, Shield, BarChart3, ShoppingCart } from "lucide-react";
 import BrochureHeader from "@/components/brochure/BrochureHeader";
 import PlanCard from "@/components/brochure/PlanCard";
 import { getGroupedPlans, getPlansByGroup } from "@/data/warrantyPlans";
@@ -46,13 +46,18 @@ const BrochureHome = () => {
             <p className="text-white/60 mt-4 text-lg max-w-lg">
               Browse, compare and understand warranty plans from Canada's top providers. Built for dealerships and their customers.
             </p>
-            <div className="flex gap-3 mt-8">
+            <div className="flex flex-wrap gap-3 mt-8">
               <Button asChild size="lg" className="bg-accent text-[#0f1b3d] hover:bg-accent/90 font-semibold">
                 <a href="#plans">
                   Browse Plans <ArrowRight className="ml-1 h-4 w-4" />
                 </a>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-white/20 text-white bg-accent hover:bg-accent/90">
+              <Button asChild size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                <Link to="/purchase">
+                  <ShoppingCart className="mr-1 h-4 w-4" /> Get a Quote
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
                 <Link to="/brochure/compare">
                   <BarChart3 className="mr-1 h-4 w-4" /> Compare Plans
                 </Link>

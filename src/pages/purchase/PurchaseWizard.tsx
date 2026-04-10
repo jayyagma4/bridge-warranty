@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BrochureHeader from "@/components/brochure/BrochureHeader";
@@ -22,10 +22,13 @@ const STEPS = [
 ] as const;
 
 const PurchaseWizard = () => {
+  const [searchParams] = useSearchParams();
+  const preselectedPlan = searchParams.get("plan");
+
   const [step, setStep] = useState(0);
   const [state, setState] = useState<PurchaseState>({
     vehicle: null,
-    selectedPlanSlug: null,
+    selectedPlanSlug: preselectedPlan || null,
     selectedTierIndex: null,
     selectedTermIndex: null,
     selectedAddOns: [],
