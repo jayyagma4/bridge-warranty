@@ -18,6 +18,8 @@ export interface WarrantyPlan {
   slug: string;
   provider: string;
   tier?: string;
+  /** Plans sharing a group slug are shown as one card with sub-tier tabs */
+  group?: string;
   eligibility: string;
   claimRange: string;
   deductible: string;
