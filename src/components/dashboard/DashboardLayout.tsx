@@ -140,13 +140,14 @@ export const adminNavItems: NavItem[] = [
 ];
 
 export const dealershipNavItems: NavItem[] = [
-  { label: "Overview", href: "/dealership", icon: LayoutDashboard },
+  { label: "Dashboard", href: "/dealership", icon: LayoutDashboard },
   { label: "Find Products", href: "/dealership/find-products", icon: Package },
   { label: "Contracts", href: "/dealership/contracts", icon: FileText },
-  { label: "Staff", href: "/dealership/staff", icon: Users },
-  { label: "Providers", href: "/dealership/providers", icon: Shield },
   { label: "Remittances", href: "/dealership/remittances", icon: DollarSign },
-  { label: "Settings", href: "/dealership/settings", icon: Settings },
+  { label: "Reporting", href: "/dealership/reporting", icon: Building2 },
+  { label: "Configuration", href: "/dealership/settings/configuration", icon: Settings },
+  { label: "Team", href: "/dealership/settings/team", icon: Users },
+  { label: "Profile", href: "/dealership/settings/profile", icon: Shield },
 ];
 
 export const providerNavItems: NavItem[] = [

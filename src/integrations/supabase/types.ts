@@ -140,6 +140,51 @@ export type Database = {
           },
         ]
       }
+      dealership_product_pricing: {
+        Row: {
+          confidentiality_enabled: boolean
+          created_at: string
+          dealership_id: string
+          id: string
+          product_id: string
+          retail_price: Json
+          updated_at: string
+        }
+        Insert: {
+          confidentiality_enabled?: boolean
+          created_at?: string
+          dealership_id: string
+          id?: string
+          product_id: string
+          retail_price?: Json
+          updated_at?: string
+        }
+        Update: {
+          confidentiality_enabled?: boolean
+          created_at?: string
+          dealership_id?: string
+          id?: string
+          product_id?: string
+          retail_price?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealership_product_pricing_dealership_id_fkey"
+            columns: ["dealership_id"]
+            isOneToOne: false
+            referencedRelation: "dealerships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealership_product_pricing_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dealerships: {
         Row: {
           address: string | null
