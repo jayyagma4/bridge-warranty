@@ -1,34 +1,38 @@
 
 
-# Complete A-Protect Data — Already Extracted
+## Plan: Add Suggested Selling Badges & Visual Highlights to Plan Selection
 
-After cross-referencing every page of the V25 PDF against `src/data/warrantyPlans.ts`, all pricing and coverage data is already accurately captured:
+### What we're building
+High-conversion visual cues on the plan selection step — "Most Popular", "Best Value", "Top Pick" badges with glowing borders and accent styling to guide buyers toward recommended plans.
 
-- **10 plan entries** with correct pricing across all tiers
-- **All add-on rows** (Zero Deductible, Hi-Tech, Hybrid, etc.) match exactly
-- **Coverage details** (parts lists) are complete
-- **Premium Vehicle Fee** makes list is correct
-- **Tire & Rim** data in `tireRimPlans.ts` is complete
-- **Coverage matrix** in `coverageMatrix.ts` matches page 4
+### Approach
 
-## One Missing Item: Top Up Warranty
+**1. Add a `salesTag` field to `WarrantyPlan` interface** (`src/data/warrantyPlans.ts`)
+- New optional field: `salesTag?: { label: string; type: "popular" | "value" | "pick" }`
+- Assign tags to specific plans:
+  - **Essential Warranty** → `"Most Popular"` (type: `popular`) — best all-around coverage
+  - **Powertrain Platinum** → `"Best Value"` (type: `value`) — strong coverage at competitive price
+  - **Diamond Plus** → `"Top Pick"` (type: `pick`) — maximum protection
 
-The **Top Up Warranty** (add-on to existing manufacturer powertrain warranty) appears in the coverage matrix but doesn't have its own plan card. The PDF doesn't show a dedicated pricing page for Top Up — it's referenced only in the comparison matrix. However, the matrix shows it includes:
-- Towing, Trip Interruption, Roadside Coverage, Seals & Gaskets, Car Rental, Wear & Tear, Electrical, Fuel System, A/C, Brakes, Front/Rear Suspension, Power Steering, Supplementary Parts, Zero Deductible, Hi-Tech ELITE, Powertrain PLUS, Hybrid, Unlimited km (as options)
+**2. Update `PlanSelectionStep.tsx`** — the purchase wizard plan cards
+- If a plan has a `salesTag`, render a floating badge at the top-right of the card
+- Apply a colored glow/ring effect based on tag type:
+  - `popular` → gold/amber glow + ring (`ring-amber-400/40 shadow-amber-400/20`)
+  - `value` → green glow (`ring-emerald-400/40 shadow-emerald-400/20`)
+  - `pick` → blue/primary glow (`ring-primary/40 shadow-primary/20`)
+- Add a subtle animated pulse on the badge to draw attention
+- Sort tagged plans to appear first in the list (tagged plans float to top)
 
-## What Actually Needs Fixing
+**3. Update `PlanCard.tsx`** — the brochure browse cards
+- Same badge treatment so the suggested selling is consistent across brochure and purchase flows
 
-The real issue you reported — **not being able to select dedicated plans within each category** — is a UI problem, not a data problem. Currently:
+### Visual result
+- Tagged plan cards will have a colored ring border and soft outer glow
+- A small pill badge sits at the top-right corner with the label (e.g. "⭐ Most Popular")
+- Non-tagged plans remain visually neutral — the contrast naturally draws the eye to recommended options
 
-1. **Powertrain plans** (Bronze/Silver/Gold/Platinum) show as 4 separate cards, which is correct
-2. **Essential Warranty** shows as 1 card with 6 pricing tiers inside — this is correct per the brochure
-3. Each plan's "View Details" button navigates to `/brochure/:planSlug` which should work
-
-### Recommended Fix
-If the issue is that clicking plan cards doesn't navigate properly, I'll:
-1. Verify the routing works for all plan slugs
-2. Ensure the plan detail page loads correctly for each plan
-3. Add the Top Up Warranty as a plan entry (even without pricing, showing coverage info)
-
-Shall I proceed with fixing the navigation/selection issue and adding the Top Up plan?
+### Files changed
+- `src/data/warrantyPlans.ts` — add `salesTag` to interface + assign to 3 plans
+- `src/components/purchase/PlanSelectionStep.tsx` — render badges, glow styles, sort order
+- `src/components/brochure/PlanCard.tsx` — render badges on brochure cards too
 
