@@ -21,12 +21,12 @@ export interface PlanColumn {
 }
 
 export const PLAN_COLUMNS: PlanColumn[] = [
-  { key: "powertrain", label: "Powertrain", sublabel: "Bronze / Silver / Gold / Platinum", claimRange: "$750 – $3,000", color: "hsl(225, 70%, 20%)" },
-  { key: "essential", label: "Essential", sublabel: "Warranty", claimRange: "$1,000 – $10,000", color: "hsl(120, 25%, 32%)" },
-  { key: "premium-special", label: "Premium Special", sublabel: "Warranty", claimRange: "$3,000 – $5,000", color: "hsl(120, 30%, 28%)" },
-  { key: "luxury", label: "Luxury", sublabel: "Warranty", claimRange: "$1,000 – $3,000", color: "hsl(45, 80%, 45%)", textColor: "hsl(0, 0%, 10%)" },
-  { key: "diamond-plus", label: "Diamond Plus", sublabel: "Warranty", claimRange: "$5,000 – $20,000", color: "hsl(280, 40%, 30%)" },
-  { key: "top-up", label: "Top Up", sublabel: "Warranty", claimRange: "$5,000 – $10,000", color: "hsl(40, 70%, 50%)", textColor: "hsl(0, 0%, 10%)" },
+  { key: "powertrain", label: "Powertrain", sublabel: "Bronze / Silver / Gold / Platinum", claimRange: "$750 – $3,000", color: "#1a2744" },
+  { key: "essential", label: "Essential", sublabel: "Warranty", claimRange: "$1,000 – $10,000", color: "#5b6b3c" },
+  { key: "premium-special", label: "Premium Special", sublabel: "Warranty", claimRange: "$3,000 – $5,000", color: "#3d5a3a" },
+  { key: "luxury", label: "Luxury", sublabel: "Warranty", claimRange: "$1,000 – $3,000", color: "#c8a82e", textColor: "#1a1a1a" },
+  { key: "diamond-plus", label: "Diamond Plus", sublabel: "Warranty", claimRange: "$5,000 – $20,000", color: "#3a2a50" },
+  { key: "top-up", label: "Top Up", sublabel: "Warranty", claimRange: "$5,000 – $10,000", color: "#7b1e1e" },
 ];
 
 export const coverageMatrix: MatrixRow[] = [
