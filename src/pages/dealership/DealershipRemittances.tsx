@@ -61,7 +61,7 @@ const DealershipRemittances = () => {
         .from("contracts")
         .select("id, customer_first_name, customer_last_name, contract_price, dealer_cost, product_id, provider_id, created_at")
         .eq("dealership_id", dealershipId)
-        .eq("status", "sold");
+        .eq("status", "submitted");
 
       // Existing remittances
       const { data: allContracts } = await supabase

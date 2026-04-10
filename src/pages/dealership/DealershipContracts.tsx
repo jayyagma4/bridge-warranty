@@ -29,13 +29,13 @@ interface Contract {
 
 const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
-  sold: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+  submitted: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
   active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
   expired: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
   cancelled: "bg-destructive/10 text-destructive",
 };
 
-const TABS = ["all", "draft", "sold", "active", "expired", "cancelled"];
+const TABS = ["all", "draft", "submitted", "active", "expired", "cancelled"];
 
 const DealershipContracts = () => {
   const { dealershipId, loading: dLoading } = useDealership();
@@ -146,9 +146,9 @@ const DealershipContracts = () => {
                         <TableCell>
                           <div className="flex gap-1">
                             {c.status === "draft" && (
-                              <Button size="sm" variant="outline" onClick={() => handleStatusChange(c.id, "sold")}>Mark Sold</Button>
+                              <Button size="sm" variant="outline" onClick={() => handleStatusChange(c.id, "submitted")}>Submit</Button>
                             )}
-                            {(c.status === "draft" || c.status === "sold") && (
+                            {(c.status === "draft" || c.status === "submitted") && (
                               <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleStatusChange(c.id, "cancelled")}>Cancel</Button>
                             )}
                           </div>
