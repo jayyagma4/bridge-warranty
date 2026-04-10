@@ -17,7 +17,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 const DealershipOverview = () => {
   const { dealershipId, loading: dLoading } = useDealership();
   const [stats, setStats] = useState({
-    total: 0, active: 0, draft: 0, sold: 0,
+    total: 0, active: 0, draft: 0, submitted: 0,
     revenue: 0, pendingRemittances: 0, avgPerContract: 0,
   });
   const [chartData, setChartData] = useState<{ month: string; contracts: number }[]>([]);
@@ -36,11 +36,11 @@ const DealershipOverview = () => {
         const total = contracts.length;
         const active = contracts.filter((c) => c.status === "active").length;
         const draft = contracts.filter((c) => c.status === "draft").length;
-        const sold = contracts.filter((c) => c.status === "sold").length;
+        const submitted = contracts.filter((c) => c.status === "submitted").length;
         const revenue = contracts.reduce((s, c) => s + (Number(c.contract_price) || 0), 0);
         const avgPerContract = total > 0 ? revenue / total : 0;
 
-        setStats({ total, active, draft, sold, revenue, pendingRemittances: 0, avgPerContract });
+        setStats({ total, active, draft, submitted, revenue, pendingRemittances: 0, avgPerContract });
 
         // Chart: last 6 months
         const months: Record<string, number> = {};
@@ -100,7 +100,7 @@ const DealershipOverview = () => {
     { label: "Total Contracts", value: stats.total, icon: FileText, color: "text-primary" },
     { label: "Active", value: stats.active, icon: TrendingUp, color: "text-green-500" },
     { label: "Draft", value: stats.draft, icon: FileText, color: "text-muted-foreground" },
-    { label: "Sold", value: stats.sold, icon: DollarSign, color: "text-amber-500" },
+    { label: "Submitted", value: stats.submitted, icon: DollarSign, color: "text-amber-500" },
     { label: "Revenue", value: `$${stats.revenue.toLocaleString()}`, icon: DollarSign, color: "text-green-600" },
     { label: "Pending Remittances", value: stats.pendingRemittances, icon: DollarSign, color: "text-orange-500" },
     { label: "Avg / Contract", value: `$${stats.avgPerContract.toFixed(0)}`, icon: BarChart3, color: "text-primary" },
