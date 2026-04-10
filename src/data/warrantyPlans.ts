@@ -255,6 +255,11 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Trip Interruption"],
     coverageDetails: POWERTRAIN_COVERAGE_DETAILS,
     benefits: SHARED_BENEFITS.filter(b => !["Roadside Coverage", "Car Rental"].includes(b.name)),
+    importantNotes: [
+      "3-month and 6-month terms include Unlimited km at no extra cost.",
+      "Air Conditioning and Hi-Tech Components add-ons are only available on 12-month or longer terms.",
+      "Add-on options are available at additional cost per term selected.",
+    ],
     pricingTiers: [{
       perClaimAmount: 1500,
       deductible: 100,
