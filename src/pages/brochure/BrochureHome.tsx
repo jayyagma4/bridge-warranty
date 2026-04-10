@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Shield, BarChart3, ShoppingCart, ChevronRight, Check } from "lucide-react";
+import { ArrowRight, Shield, BarChart3, ChevronRight, Check } from "lucide-react";
 import BrochureHeader from "@/components/brochure/BrochureHeader";
 import PlanCard from "@/components/brochure/PlanCard";
 import { getGroupedPlans, getPlansByGroup } from "@/data/warrantyPlans";
