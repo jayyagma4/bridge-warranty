@@ -6,6 +6,7 @@ import BrochureHeader from "@/components/brochure/BrochureHeader";
 import CoverageAccordion from "@/components/brochure/CoverageAccordion";
 import PricingTable from "@/components/brochure/PricingTable";
 import BenefitsSection from "@/components/brochure/BenefitsSection";
+import FinePrintSection from "@/components/brochure/FinePrintSection";
 import { getPlanBySlug, getPlansByGroup } from "@/data/warrantyPlans";
 import { useState, useMemo } from "react";
 
