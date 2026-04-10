@@ -34,19 +34,6 @@ const TermPricingStep = ({ state, updateState, onNext, onBack }: StepProps) => {
     updateState({ selectedTermIndex: termIndex, selectedAddOns: [] });
   };
 
-  const selectedTier = state.selectedTierIndex !== null ? tiers[state.selectedTierIndex] : null;
-
-  // Get base price for selected term
-  const basePrice = useMemo(() => {
-    if (!selectedTier || state.selectedTermIndex === null) return null;
-    if (selectedTier.mileageBands) {
-      return selectedTier.mileageBands[0]?.values[state.selectedTermIndex] ?? null;
-    }
-    const baseRow = selectedTier.rows.find(r => r.label === "Base Price");
-    const val = baseRow?.values[state.selectedTermIndex];
-    return typeof val === "number" ? val : null;
-  }, [selectedTier, state.selectedTermIndex]);
-
   return (
     <Card className="p-6 md:p-8">
       <div className="flex items-center gap-3 mb-6">
