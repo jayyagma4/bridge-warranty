@@ -4,9 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Shield, Check, Star, Info } from "lucide-react";
+import { ArrowLeft, Shield, Check, Star, Info, AlertTriangle, CircleCheck } from "lucide-react";
 import BrochureHeader, { useDealerMode } from "@/components/brochure/BrochureHeader";
-import { tireRimTiers, vehicleClasses, coveredServices } from "@/data/tireRimPlans";
+import {
+  tireRimTiers,
+  vehicleClasses,
+  coveredServices,
+  eligibilityConditions,
+  disclaimers,
+  roadsideCoverageConditions,
+} from "@/data/tireRimPlans";
 
 const TireRimPage = () => {
   const dealerMode = useDealerMode();
@@ -24,11 +31,31 @@ const TireRimPage = () => {
           </Button>
           <Badge className="bg-accent/20 text-accent border-accent/30 mb-3">A-Protect</Badge>
           <h1 className="font-display text-3xl md:text-4xl font-bold">Tire & Rim Protection</h1>
-          <p className="text-white/60 mt-2">Available on vehicles 10 years or newer. Not eligible for commercial use.</p>
+          <p className="text-white/60 mt-2">Coverage Plans — Confidential Price List V25</p>
         </div>
       </section>
 
       <div className="container mx-auto px-4 py-8 space-y-12">
+
+        {/* Eligibility Conditions */}
+        <div className="rounded-lg border border-accent/30 bg-accent/5 p-5 space-y-3">
+          <h2 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-accent" />
+            Eligibility & Conditions
+          </h2>
+          <ul className="space-y-2">
+            {eligibilityConditions.map((cond, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm">
+                <CircleCheck className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <span className="font-semibold text-foreground">{cond.label}:</span>{" "}
+                  <span className="text-muted-foreground">{cond.detail}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {/* Tier cards */}
         <div className="grid sm:grid-cols-3 gap-5">
           {tireRimTiers.map(tier => (
@@ -131,14 +158,52 @@ const TireRimPage = () => {
               <div key={service.name} className="rounded-lg border bg-card p-4 space-y-2">
                 <div className="flex items-start gap-2">
                   <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-sm text-foreground">{service.name}</h4>
-                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{service.description}</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-semibold text-sm text-foreground">{service.name}</h4>
+                      <div className="flex gap-1">
+                        {service.tiers.map(tier => (
+                          <Badge
+                            key={tier}
+                            variant="outline"
+                            className="text-[9px] px-1.5 py-0 capitalize"
+                          >
+                            {tier === "essential" ? "Ess." : tier === "extended" ? "Ext." : "Sup."}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{service.description}</p>
+                    {service.subItems && (
+                      <ul className="space-y-1 ml-1">
+                        {service.subItems.map((item, i) => (
+                          <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                            <span className="text-primary mt-0.5 shrink-0">•</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {service.name === "Roadside Coverage" && (
+                      <div className="mt-2 pt-2 border-t border-border/50 space-y-1">
+                        {roadsideCoverageConditions.map((cond, i) => (
+                          <p key={i} className="text-[11px] text-muted-foreground/80 italic">{cond}</p>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Disclaimers */}
+        <div className="rounded-lg border border-muted bg-muted/20 p-4 space-y-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Important Notice</h3>
+          {disclaimers.map((d, i) => (
+            <p key={i} className="text-xs text-muted-foreground italic">{d}</p>
+          ))}
         </div>
       </div>
     </div>
