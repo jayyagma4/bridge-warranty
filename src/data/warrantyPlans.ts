@@ -362,6 +362,15 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Roadside Coverage", "Trip Interruption", "Seals & Gaskets", "Wear & Tear", "Car Rental"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Seals & Gaskets", "Wear & Tear"].includes(c.name))],
     benefits: SHARED_BENEFITS,
+    importantNotes: [
+      "Seals & Gaskets and Wear & Tear coverage are included at no additional cost.",
+      "Car Rental benefit is included with all Essential Warranty tiers.",
+      "Roadside Coverage included: towing, fuel delivery, battery boost, lockout, tire change, winching — max 3 calls per term.",
+      "Eligible vehicles up to 220,000 km for $7,500 and $10,000 per-claim tiers.",
+      "Premium Vehicle Fee applies to $5,000, $7,500 and $10,000 per-claim tiers for select makes. Fee is in addition to the base price.",
+      "Hybrid Components add-on available on $3,000/claim tier and above.",
+      "Hi-Tech ELITE (vs. Hi-Tech Components) is available on $5,000/claim tier and above — includes additional items such as anti-theft module, body control module, sunroof motor, and more.",
+    ],
     pricingTiers: [
       {
         perClaimAmount: 1000,
