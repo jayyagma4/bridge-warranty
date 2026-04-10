@@ -52,7 +52,7 @@ const BrochureHome = () => {
                   Browse Plans <ArrowRight className="ml-1 h-4 w-4" />
                 </a>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+              <Button asChild size="lg" variant="outline" className="border-white/20 text-white bg-accent hover:bg-accent/90">
                 <Link to="/purchase">
                   <ShoppingCart className="mr-1 h-4 w-4" /> Get a Quote
                 </Link>
