@@ -83,7 +83,7 @@ const FindProducts = () => {
               <p className="text-white/60 mt-3 text-base max-w-lg">
                 Decode a vehicle, browse coverage options, compare plans, and generate print-ready quotes — all in one place.
               </p>
-              <div className="flex flex-wrap gap-3 mt-6">
+              <div className="flex flex-wrap gap-3 mt-6 bg-white/0">
                 <Button asChild size="lg" className="bg-accent text-[#0f1b3d] hover:bg-accent/90 font-semibold">
                   <a href="#vin-bar">
                     <Car className="mr-1.5 h-4 w-4" /> Start with VIN
