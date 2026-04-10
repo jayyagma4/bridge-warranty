@@ -146,9 +146,9 @@ const DealershipContracts = () => {
                         <TableCell>
                           <div className="flex gap-1">
                             {c.status === "draft" && (
-                              <Button size="sm" variant="outline" onClick={() => handleStatusChange(c.id, "sold")}>Mark Sold</Button>
+                              <Button size="sm" variant="outline" onClick={() => handleStatusChange(c.id, "submitted")}>Submit</Button>
                             )}
-                            {(c.status === "draft" || c.status === "sold") && (
+                            {(c.status === "draft" || c.status === "submitted") && (
                               <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleStatusChange(c.id, "cancelled")}>Cancel</Button>
                             )}
                           </div>
