@@ -14,26 +14,28 @@ import { cn } from "@/lib/utils";
 
 interface PricingTier {
   term: string;
-  mileage_range: string;
-  deductible: number;
   dealer_cost: number;
+  suggested_retail: number;
+  mileage_bracket?: string;
+  vehicle_class?: string;
 }
 
 interface Product {
   id: string;
   name: string;
   type: string;
-  pricing: { tiers?: PricingTier[]; base_price?: number; dealer_cost?: number } | null;
+  pricing: {
+    per_claim?: number;
+    deductible?: number;
+    eligibility?: string;
+    tiers?: PricingTier[];
+  } | null;
   provider_id: string;
-}
-
-interface RetailPriceMap {
-  [tierKey: string]: number;
 }
 
 interface PricingConfig {
   product_id: string;
-  retail_price: RetailPriceMap;
+  retail_price: Record<string, number>;
   confidentiality_enabled: boolean;
 }
 
@@ -122,25 +124,30 @@ const Configuration = () => {
     });
   };
 
-  const tierKey = (tier: PricingTier) => `${tier.term}|${tier.mileage_range}|${tier.deductible}`;
+  const tierKey = (tier: PricingTier, index: number) => {
+    const parts = [tier.term];
+    if (tier.mileage_bracket) parts.push(tier.mileage_bracket);
+    if (tier.vehicle_class) parts.push(tier.vehicle_class);
+    parts.push(String(index));
+    return parts.join("|");
+  };
 
-  const getRetailPrice = (productId: string, tier: PricingTier): number | null => {
+  const getRetailPrice = (productId: string, tier: PricingTier, index: number): number | null => {
     const config = pricingConfigs[productId];
     if (!config?.retail_price) return null;
-    const key = tierKey(tier);
-    const rp = (config.retail_price as Record<string, any>);
-    return rp[key] ?? null;
+    const key = tierKey(tier, index);
+    return (config.retail_price as Record<string, number>)[key] ?? null;
   };
 
   const getMarkup = (cost: number, retail: number | null): string => {
-    if (!retail || retail <= 0) return "0.0%";
+    if (!retail || retail <= 0) return "—";
     const pct = ((retail - cost) / cost) * 100;
     return `${pct.toFixed(1)}%`;
   };
 
-  const handleSaveTierPrice = async (productId: string, tier: PricingTier) => {
+  const handleSaveTierPrice = async (productId: string, tier: PricingTier, index: number) => {
     if (!dealershipId) return;
-    const key = tierKey(tier);
+    const key = tierKey(tier, index);
     const priceStr = editingTiers[key];
     if (!priceStr) return;
 
@@ -177,6 +184,8 @@ const Configuration = () => {
     toast({ title: "Price Saved" });
   };
 
+  const fmt = (v: number) => `$${v.toLocaleString("en-CA", { minimumFractionDigits: 2 })}`;
+
   if (dLoading || loading) {
     return (
       <DashboardLayout navItems={dealershipNavItems} title="Configuration">
@@ -198,7 +207,11 @@ const Configuration = () => {
                 <Settings2 className="w-6 h-6 text-primary" />
                 <div>
                   <h2 className="text-lg font-semibold">Retail Pricing</h2>
-                  <p className="text-sm text-muted-foreground">Select a product to configure its pricing terms.</p>
+                  <p className="text-sm text-muted-foreground">
+                    {confidentialityEnabled
+                      ? "Confidentiality Pricing is ON — customers see your retail prices."
+                      : "Confidentiality Pricing is OFF — showing dealer cost only."}
+                  </p>
                 </div>
               </div>
               {isAdmin && (
@@ -237,10 +250,10 @@ const Configuration = () => {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <Settings2 className="w-4 h-4" /> Products
+                <Settings2 className="w-4 h-4" /> Products ({filteredProducts.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="p-0 max-h-[600px] overflow-y-auto">
               <div className="divide-y">
                 {filteredProducts.map((p) => (
                   <button
@@ -282,11 +295,24 @@ const Configuration = () => {
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                       <Settings2 className="w-5 h-5 text-primary" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-semibold">{selectedProductData.name}</h3>
                       <p className="text-sm text-muted-foreground">
                         Provider: {providers[selectedProductData.provider_id] || "—"} • Type: {selectedProductData.type}
                       </p>
+                      {selectedProductData.pricing && (
+                        <div className="flex gap-4 mt-1 text-xs text-muted-foreground">
+                          {selectedProductData.pricing.per_claim ? (
+                            <span>Per Claim: {fmt(selectedProductData.pricing.per_claim)}</span>
+                          ) : null}
+                          {selectedProductData.pricing.deductible != null && (
+                            <span>Deductible: {selectedProductData.pricing.deductible === 0 ? "None" : fmt(selectedProductData.pricing.deductible)}</span>
+                          )}
+                          {selectedProductData.pricing.eligibility && (
+                            <span>Eligibility: {selectedProductData.pricing.eligibility}</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -296,7 +322,7 @@ const Configuration = () => {
                       <h4 className="font-medium flex items-center gap-2">
                         <DollarSign className="w-4 h-4" /> Pricing Configuration
                       </h4>
-                      <span className="text-sm text-muted-foreground">{tiers.length} plans</span>
+                      <span className="text-sm text-muted-foreground">{tiers.length} tiers</span>
                     </div>
 
                     {tiers.length === 0 ? (
@@ -307,8 +333,9 @@ const Configuration = () => {
                           <TableHeader>
                             <TableRow>
                               <TableHead className="min-w-[140px]">Term</TableHead>
-                              <TableHead>Deductible</TableHead>
-                              <TableHead>Cost Price</TableHead>
+                              {tiers.some(t => t.mileage_bracket) && <TableHead>Mileage Bracket</TableHead>}
+                              {tiers.some(t => t.vehicle_class) && <TableHead>Vehicle Class</TableHead>}
+                              <TableHead>Dealer Cost</TableHead>
                               <TableHead>Suggested Retail</TableHead>
                               <TableHead className="min-w-[200px]">Your Retail Price</TableHead>
                               <TableHead>Markup %</TableHead>
@@ -316,20 +343,24 @@ const Configuration = () => {
                           </TableHeader>
                           <TableBody>
                             {tiers.map((tier, i) => {
-                              const key = tierKey(tier);
-                              const retail = getRetailPrice(selectedProductData.id, tier);
+                              const key = tierKey(tier, i);
+                              const customRetail = getRetailPrice(selectedProductData.id, tier, i);
                               const isEditing = key in editingTiers;
+                              const hasMileageBracket = tiers.some(t => t.mileage_bracket);
+                              const hasVehicleClass = tiers.some(t => t.vehicle_class);
                               return (
                                 <TableRow key={i}>
                                   <TableCell>
-                                    <div>
-                                      <p className="font-medium text-sm">{tier.term}</p>
-                                      <p className="text-xs text-muted-foreground">Mileage: {tier.mileage_range}</p>
-                                    </div>
+                                    <p className="font-medium text-sm">{tier.term}</p>
                                   </TableCell>
-                                  <TableCell>${tier.deductible.toFixed(2)}</TableCell>
-                                  <TableCell className="font-medium">${tier.dealer_cost.toLocaleString("en-CA", { minimumFractionDigits: 2 })}</TableCell>
-                                  <TableCell className="text-muted-foreground">—</TableCell>
+                                  {hasMileageBracket && (
+                                    <TableCell className="text-sm">{tier.mileage_bracket || "—"}</TableCell>
+                                  )}
+                                  {hasVehicleClass && (
+                                    <TableCell className="text-sm">{tier.vehicle_class || "—"}</TableCell>
+                                  )}
+                                  <TableCell className="font-medium">{fmt(tier.dealer_cost)}</TableCell>
+                                  <TableCell className="text-muted-foreground">{fmt(tier.suggested_retail)}</TableCell>
                                   <TableCell>
                                     {isEditing ? (
                                       <div className="flex items-center gap-2">
@@ -342,7 +373,7 @@ const Configuration = () => {
                                         />
                                         <Button
                                           size="sm"
-                                          onClick={() => handleSaveTierPrice(selectedProductData.id, tier)}
+                                          onClick={() => handleSaveTierPrice(selectedProductData.id, tier, i)}
                                           disabled={saving[key]}
                                         >
                                           Save
@@ -354,20 +385,22 @@ const Configuration = () => {
                                           <Button
                                             size="sm"
                                             variant="outline"
-                                            onClick={() => setEditingTiers((prev) => ({ ...prev, [key]: retail?.toString() || "" }))}
+                                            onClick={() => setEditingTiers((prev) => ({ ...prev, [key]: customRetail?.toString() || tier.suggested_retail.toString() }))}
                                           >
-                                            Enter price
+                                            {customRetail != null ? "Edit" : "Set price"}
                                           </Button>
                                         )}
-                                        {retail != null && (
-                                          <span className="text-xs text-muted-foreground">
-                                            Current: ${retail.toLocaleString("en-CA", { minimumFractionDigits: 2 })}
+                                        {customRetail != null && (
+                                          <span className="text-sm font-medium text-primary">
+                                            {fmt(customRetail)}
                                           </span>
                                         )}
                                       </div>
                                     )}
                                   </TableCell>
-                                  <TableCell className="text-sm">{getMarkup(tier.dealer_cost, retail)}</TableCell>
+                                  <TableCell className="text-sm">
+                                    {getMarkup(tier.dealer_cost, customRetail ?? tier.suggested_retail)}
+                                  </TableCell>
                                 </TableRow>
                               );
                             })}
