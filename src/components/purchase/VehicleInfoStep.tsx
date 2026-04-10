@@ -4,60 +4,101 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Car, Search, AlertCircle } from "lucide-react";
+import { Car, Search, AlertCircle, Loader2, Fuel, Gauge, Info } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { isPremiumVehicle } from "@/lib/eligibility";
 import type { StepProps, VehicleInfo } from "./types";
 
-// Mock VIN decoder — replace with real API later
-function mockDecodeVin(vin: string): Omit<VehicleInfo, "vin" | "mileage"> | null {
-  if (vin.length !== 17) return null;
-  const makes: Record<string, { make: string; model: string }> = {
-    "1": { make: "Chevrolet", model: "Silverado" },
-    "2": { make: "Ford", model: "F-150" },
-    "3": { make: "Toyota", model: "Camry" },
-    "4": { make: "Honda", model: "Civic" },
-    "5": { make: "BMW", model: "3 Series" },
-    J: { make: "Subaru", model: "Outback" },
-    W: { make: "Mercedes", model: "C-Class" },
-  };
-  const first = vin[0].toUpperCase();
-  const match = makes[first] || { make: "Generic", model: "Vehicle" };
-  const yearDigit = parseInt(vin[9], 36);
-  const year = 2000 + (yearDigit > 30 ? yearDigit - 30 : yearDigit);
-  return { year: Math.min(Math.max(year, 2000), 2026), make: match.make, model: match.model };
+interface DecodedVehicle {
+  year: number | null;
+  make: string | null;
+  model: string | null;
+  bodyClass?: string | null;
+  vehicleType?: string | null;
+  driveType?: string | null;
+  fuelType?: string | null;
+  engineCylinders?: string | null;
+  displacementL?: string | null;
+  gvwr?: string | null;
+  warning?: string;
 }
 
 const VehicleInfoStep = ({ state, updateState, onNext }: StepProps) => {
   const [vin, setVin] = useState(state.vehicle?.vin || "");
   const [mileage, setMileage] = useState(state.vehicle?.mileage?.toString() || "");
-  const [decoded, setDecoded] = useState<Omit<VehicleInfo, "vin" | "mileage"> | null>(
-    state.vehicle ? { year: state.vehicle.year, make: state.vehicle.make, model: state.vehicle.model } : null
+  const [decoded, setDecoded] = useState<DecodedVehicle | null>(
+    state.vehicle
+      ? {
+          year: state.vehicle.year,
+          make: state.vehicle.make,
+          model: state.vehicle.model,
+          bodyClass: state.vehicle.bodyClass,
+          vehicleType: state.vehicle.vehicleType,
+          driveType: state.vehicle.driveType,
+          fuelType: state.vehicle.fuelType,
+          engineCylinders: state.vehicle.engineCylinders,
+          displacementL: state.vehicle.displacementL,
+          gvwr: state.vehicle.gvwr,
+        }
+      : null
   );
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleDecode = () => {
+  const handleDecode = async () => {
     setError("");
-    const result = mockDecodeVin(vin);
-    if (!result) {
-      setError("Invalid VIN. Must be 17 characters.");
-      return;
+    setLoading(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("decode-vin", {
+        body: { vin },
+      });
+
+      if (fnError || data?.error) {
+        setError(data?.error || fnError?.message || "Failed to decode VIN");
+        setDecoded(null);
+        return;
+      }
+
+      setDecoded(data as DecodedVehicle);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setDecoded(result);
   };
 
   const handleContinue = () => {
-    if (!decoded || !mileage) return;
-    const miles = parseInt(mileage.replace(/,/g, ""));
-    if (isNaN(miles) || miles < 0) {
+    if (!decoded?.year || !decoded?.make || !decoded?.model || !mileage) return;
+    const km = parseInt(mileage.replace(/,/g, ""));
+    if (isNaN(km) || km < 0) {
       setError("Enter a valid mileage.");
       return;
     }
     updateState({
-      vehicle: { vin, year: decoded.year, make: decoded.make, model: decoded.model, mileage: miles },
+      vehicle: {
+        vin,
+        year: decoded.year,
+        make: decoded.make,
+        model: decoded.model,
+        mileage: km,
+        bodyClass: decoded.bodyClass || undefined,
+        vehicleType: decoded.vehicleType || undefined,
+        driveType: decoded.driveType || undefined,
+        fuelType: decoded.fuelType || undefined,
+        engineCylinders: decoded.engineCylinders || undefined,
+        displacementL: decoded.displacementL || undefined,
+        gvwr: decoded.gvwr || undefined,
+      },
       // Reset downstream selections when vehicle changes
-      selectedPlanSlug: null, selectedTierIndex: null, selectedTermIndex: null, selectedAddOns: [],
+      selectedPlanSlug: null,
+      selectedTierIndex: null,
+      selectedTermIndex: null,
+      selectedAddOns: [],
     });
     onNext();
   };
+
+  const isPremium = decoded?.make && decoded?.model ? isPremiumVehicle(decoded.make, decoded.model) : false;
 
   return (
     <Card className="p-6 md:p-8">
@@ -67,7 +108,7 @@ const VehicleInfoStep = ({ state, updateState, onNext }: StepProps) => {
         </div>
         <div>
           <h2 className="font-display text-xl font-bold text-foreground">Vehicle Information</h2>
-          <p className="text-sm text-muted-foreground">Enter your VIN to identify your vehicle.</p>
+          <p className="text-sm text-muted-foreground">Enter your VIN to automatically identify your vehicle.</p>
         </div>
       </div>
 
@@ -80,11 +121,15 @@ const VehicleInfoStep = ({ state, updateState, onNext }: StepProps) => {
               placeholder="e.g. 1HGBH41JXMN109186"
               value={vin}
               maxLength={17}
-              onChange={e => { setVin(e.target.value.toUpperCase()); setError(""); }}
+              onChange={e => {
+                setVin(e.target.value.toUpperCase());
+                setError("");
+              }}
               className="font-mono tracking-wider"
             />
-            <Button onClick={handleDecode} variant="secondary" disabled={vin.length < 17}>
-              <Search className="h-4 w-4 mr-1" /> Decode
+            <Button onClick={handleDecode} variant="secondary" disabled={vin.length < 17 || loading}>
+              {loading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Search className="h-4 w-4 mr-1" />}
+              Decode
             </Button>
           </div>
           {error && (
@@ -94,9 +139,11 @@ const VehicleInfoStep = ({ state, updateState, onNext }: StepProps) => {
           )}
         </div>
 
-        {decoded && (
-          <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+        {decoded && decoded.year && decoded.make && (
+          <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
             <p className="text-sm font-semibold text-foreground">Decoded Vehicle</p>
+
+            {/* Primary info */}
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Year</p>
@@ -111,11 +158,62 @@ const VehicleInfoStep = ({ state, updateState, onNext }: StepProps) => {
                 <p className="font-bold text-foreground">{decoded.model}</p>
               </div>
             </div>
-            {["BMW", "Mercedes", "Audi", "Tesla", "Porsche", "Jaguar", "Land Rover", "Volvo", "MINI"].includes(decoded.make) && (
-              <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
-                Premium Vehicle — additional fees may apply
-              </Badge>
-            )}
+
+            {/* Extended info */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-border/50">
+              {decoded.bodyClass && (
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Body</p>
+                  <p className="text-xs font-medium text-foreground">{decoded.bodyClass}</p>
+                </div>
+              )}
+              {decoded.driveType && (
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Drive</p>
+                  <p className="text-xs font-medium text-foreground">{decoded.driveType}</p>
+                </div>
+              )}
+              {decoded.fuelType && (
+                <div className="flex items-start gap-1">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Fuel</p>
+                    <p className="text-xs font-medium text-foreground">{decoded.fuelType}</p>
+                  </div>
+                </div>
+              )}
+              {decoded.engineCylinders && decoded.displacementL && (
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Engine</p>
+                  <p className="text-xs font-medium text-foreground">
+                    {decoded.engineCylinders}-cyl {decoded.displacementL}L
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Badges */}
+            <div className="flex flex-wrap gap-2">
+              {isPremium && (
+                <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
+                  Premium Vehicle — additional fees apply
+                </Badge>
+              )}
+              {decoded.fuelType?.toLowerCase().includes("electric") && (
+                <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50">
+                  <Fuel className="h-3 w-3 mr-1" /> Electric Vehicle
+                </Badge>
+              )}
+              {decoded.fuelType?.toLowerCase().includes("hybrid") && (
+                <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50">
+                  Hybrid — additional coverage available
+                </Badge>
+              )}
+              {decoded.warning && (
+                <Badge variant="outline" className="text-orange-600 border-orange-300 bg-orange-50">
+                  <Info className="h-3 w-3 mr-1" /> Partial decode — verify details
+                </Badge>
+              )}
+            </div>
           </div>
         )}
 
@@ -133,7 +231,7 @@ const VehicleInfoStep = ({ state, updateState, onNext }: StepProps) => {
       </div>
 
       <div className="flex justify-end mt-8">
-        <Button onClick={handleContinue} disabled={!decoded || !mileage}>
+        <Button onClick={handleContinue} disabled={!decoded?.year || !decoded?.make || !mileage}>
           Continue to Plan Selection →
         </Button>
       </div>
