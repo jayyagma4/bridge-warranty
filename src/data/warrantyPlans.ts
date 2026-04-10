@@ -932,6 +932,13 @@ export const warrantyPlans: WarrantyPlan[] = [
       { name: "Seals & Gaskets", parts: ADDITIONAL_COVERAGE_DETAILS.find(c => c.name === "Seals & Gaskets")?.parts || "" },
     ].filter((v, i, a) => a.findIndex(t => t.name === v.name) === i),
     benefits: SHARED_BENEFITS,
+    importantNotes: [
+      "This is an add-on product — it extends coverage BEYOND what the manufacturer's powertrain warranty covers.",
+      "Only available for vehicles that currently have an active manufacturer powertrain warranty.",
+      "Zero deductible is included at no additional cost.",
+      "Covers components NOT included in the manufacturer's powertrain warranty: Electrical, Fuel System, A/C, Brakes, Suspension, Power Steering, Supplementary Parts, and more.",
+      "No standalone pricing — sold in conjunction with existing manufacturer warranty through your dealership.",
+    ],
     pricingTiers: [], // No standalone pricing — sold as add-on to manufacturer warranty
   },
 ];
