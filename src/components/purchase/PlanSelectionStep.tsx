@@ -207,15 +207,15 @@ const PlanSelectionStep = ({ state, updateState, onNext, onBack }: StepProps) =>
                   </div>
 
                   {!allIneligible && (
-                    <div className="text-right ml-4 shrink-0">
-                      <p className="text-xs text-muted-foreground">From</p>
-                      <p className="font-display font-bold text-xl text-primary">
+                    <div className="text-right ml-4 shrink-0 flex flex-col items-end">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">Starting from</p>
+                      <p className="font-display font-bold text-2xl text-primary leading-tight">
                         ${minPrice.toLocaleString()}
                       </p>
                       {maxPrice !== minPrice && (
-                        <p className="text-[10px] text-muted-foreground">
-                          up to ${maxPrice.toLocaleString()}
-                        </p>
+                        <div className="mt-1 px-2 py-0.5 rounded-full bg-muted/60 text-[10px] text-muted-foreground font-medium">
+                          ${minPrice.toLocaleString()} – ${maxPrice.toLocaleString()}
+                        </div>
                       )}
                     </div>
                   )}
