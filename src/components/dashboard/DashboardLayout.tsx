@@ -65,12 +65,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, navItems, t
         )}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="h-16 flex items-center gap-2 px-6 border-b border-border">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">BW</span>
+          {/* Logo & Role */}
+          <div className="px-6 border-b border-border py-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">BW</span>
+              </div>
+              <span className="font-bold text-lg text-foreground">Bridge Warranty</span>
             </div>
-            <span className="font-bold text-lg text-foreground">Bridge Warranty</span>
+            <p className="text-xs text-muted-foreground mt-2 tracking-wide uppercase">
+              {primaryRole === "dealership_admin" || primaryRole === "dealership_employee"
+                ? "Dealer Admin | Confidentiality Pricing"
+                : primaryRole === "super_admin"
+                ? "Super Admin | Management"
+                : primaryRole === "provider"
+                ? "Provider | Product Management"
+                : primaryRole.replace(/_/g, " ")}
+            </p>
           </div>
 
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
