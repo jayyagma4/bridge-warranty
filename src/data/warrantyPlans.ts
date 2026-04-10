@@ -37,6 +37,8 @@ export interface WarrantyPlan {
   importantNotes?: string[];
   /** Specific exclusions for this plan beyond the general ones */
   planExclusions?: string[];
+  /** Sales tag for suggested selling */
+  salesTag?: { label: string; type: "popular" | "value" | "pick" };
 }
 
 // ═══════════════════════════════════════════════
@@ -294,6 +296,7 @@ export const warrantyPlans: WarrantyPlan[] = [
     claimRange: "$2,500 – $3,000 Per Claim",
     deductible: "$100",
     premiumFees: false,
+    salesTag: { label: "Best Value", type: "value" },
     highlights: ["Any vehicle eligible", "No premium fees", "Up to $3,000/claim", "A/C & Hi-Tech add-ons"],
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Trip Interruption"],
     coverageDetails: POWERTRAIN_COVERAGE_DETAILS,
@@ -358,6 +361,7 @@ export const warrantyPlans: WarrantyPlan[] = [
     claimRange: "$1,000 – $10,000 Per Claim",
     deductible: "$100 – $150",
     premiumFees: false,
+    salesTag: { label: "Most Popular", type: "popular" },
     highlights: ["Seals & Gaskets included", "Wear & Tear included", "Car Rental included", "Roadside Coverage included"],
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Roadside Coverage", "Trip Interruption", "Seals & Gaskets", "Wear & Tear", "Car Rental"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Seals & Gaskets", "Wear & Tear"].includes(c.name))],
@@ -667,6 +671,7 @@ export const warrantyPlans: WarrantyPlan[] = [
     claimRange: "$5,000 – $20,000 Per Claim",
     deductible: "$0 (No Deductible)",
     premiumFees: false,
+    salesTag: { label: "Top Pick", type: "pick" },
     highlights: ["Zero deductible included", "Hi-Tech Components included", "Most comprehensive plan", "Front & rear suspension"],
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Roadside Coverage", "Trip Interruption", "Alternator/Starter/Solenoid", "Water Pump", "Air Conditioning", "Brakes", "Cooling System", "Electrical", "Front & Rear Suspension", "Fuel System", "Hi-Tech Components", "Power Steering", "Seals & Gaskets", "Supplementary Parts", "Car Rental", "Wear & Tear", "Zero Deductible"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Air Conditioning", "Brakes", "Cooling System", "Electrical", "Fuel System", "Front Suspension", "Rear Suspension", "Power Steering", "Seals & Gaskets", "Supplementary Parts", "Wear & Tear", "Hi-Tech Components"].includes(c.name))],

@@ -9,11 +9,38 @@ import { checkAllPlanEligibility, isPremiumVehicle } from "@/lib/eligibility";
 import type { EligibilityResult } from "@/lib/eligibility";
 import type { StepProps } from "./types";
 
+const SALES_TAG_STYLES: Record<string, { badge: string; ring: string; glow: string; icon: string }> = {
+  popular: {
+    badge: "bg-amber-500 text-white",
+    ring: "ring-2 ring-amber-400/40",
+    glow: "shadow-[0_0_20px_rgba(245,158,11,0.15)]",
+    icon: "🔥",
+  },
+  value: {
+    badge: "bg-emerald-500 text-white",
+    ring: "ring-2 ring-emerald-400/40",
+    glow: "shadow-[0_0_20px_rgba(16,185,129,0.15)]",
+    icon: "💎",
+  },
+  pick: {
+    badge: "bg-primary text-primary-foreground",
+    ring: "ring-2 ring-primary/40",
+    glow: "shadow-[0_0_20px_hsl(225,80%,56%,0.15)]",
+    icon: "⭐",
+  },
+};
+
 const PlanSelectionStep = ({ state, updateState, onNext, onBack }: StepProps) => {
   const displayPlans = useMemo(() => {
     const grouped = getGroupedPlans("A-Protect");
     const nonGrouped = warrantyPlans.filter(p => !p.group && p.provider === "A-Protect");
-    return [...grouped, ...nonGrouped].filter(p => p.pricingTiers.length > 0);
+    const all = [...grouped, ...nonGrouped].filter(p => p.pricingTiers.length > 0);
+    // Sort: tagged plans first
+    return all.sort((a, b) => {
+      const aTag = a.salesTag ? 1 : 0;
+      const bTag = b.salesTag ? 1 : 0;
+      return bTag - aTag;
+    });
   }, []);
 
   // Build eligibility map from vehicle info
@@ -117,17 +144,27 @@ const PlanSelectionStep = ({ state, updateState, onNext, onBack }: StepProps) =>
             const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
             const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
 
+            const tagStyle = plan.salesTag ? SALES_TAG_STYLES[plan.salesTag.type] : null;
+
             const cardContent = (
               <div
                 onClick={() => !allIneligible && handleSelect(groupPlans[0].slug)}
-                className={`rounded-xl border p-5 transition-all ${
+                className={`relative rounded-xl border p-5 transition-all ${
                   allIneligible
                     ? "opacity-50 cursor-not-allowed bg-muted/30 border-muted"
                     : isSelected
                     ? "border-primary bg-primary/5 ring-2 ring-primary/20 cursor-pointer"
+                    : tagStyle
+                    ? `${tagStyle.ring} ${tagStyle.glow} hover:shadow-lg cursor-pointer`
                     : "hover:border-primary/30 hover:shadow-sm cursor-pointer"
                 }`}
               >
+                {/* Sales tag badge */}
+                {plan.salesTag && tagStyle && !allIneligible && (
+                  <div className={`absolute -top-3 right-4 px-3 py-1 rounded-full text-xs font-bold ${tagStyle.badge} animate-pulse`}>
+                    {tagStyle.icon} {plan.salesTag.label}
+                  </div>
+                )}
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
