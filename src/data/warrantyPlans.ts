@@ -37,6 +37,8 @@ export interface WarrantyPlan {
   importantNotes?: string[];
   /** Specific exclusions for this plan beyond the general ones */
   planExclusions?: string[];
+  /** Sales tag for suggested selling */
+  salesTag?: { label: string; type: "popular" | "value" | "pick" };
 }
 
 // ═══════════════════════════════════════════════
