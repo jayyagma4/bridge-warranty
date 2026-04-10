@@ -132,9 +132,9 @@ const PlanDetail = () => {
                 </div>
               )}
 
-              <Button asChild size="lg" className="mt-4 bg-accent text-[#0f1b3d] hover:bg-accent/90 font-semibold">
-                <Link to={`/purchase?plan=${plan.slug}`}>
-                  Get a Quote →
+              <Button asChild size="lg" variant="outline" className="mt-4 border-white/20 text-white hover:bg-white/10 font-semibold">
+                <Link to="/sign-in">
+                  Sign in to Get a Quote →
                 </Link>
               </Button>
 
