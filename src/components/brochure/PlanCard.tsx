@@ -11,9 +11,11 @@ interface PlanCardProps {
   groupPlans?: WarrantyPlan[] | null;
   isSelected?: boolean;
   onToggleCompare?: (slug: string) => void;
+  /** Base path for plan detail links, defaults to "/brochure" */
+  basePath?: string;
 }
 
-const PlanCard = ({ plan, groupPlans, isSelected, onToggleCompare }: PlanCardProps) => {
+const PlanCard = ({ plan, groupPlans, isSelected, onToggleCompare, basePath = "/brochure" }: PlanCardProps) => {
   const isGrouped = groupPlans && groupPlans.length > 1;
 
   // For grouped plans, show combined info
@@ -151,7 +153,7 @@ const PlanCard = ({ plan, groupPlans, isSelected, onToggleCompare }: PlanCardPro
         {/* Actions */}
         <div className="flex gap-2 pt-2 mt-auto">
           <Button asChild size="sm" className="flex-1 gap-1">
-            <Link to={`/brochure/${linkSlug}`}>
+            <Link to={`${basePath}/${linkSlug}`}>
               {isGrouped ? "View Tiers" : "View Details"}
               <ChevronRight className="h-3.5 w-3.5" />
             </Link>
