@@ -4,6 +4,13 @@ export interface VehicleInfo {
   make: string;
   model: string;
   mileage: number;
+  bodyClass?: string;
+  vehicleType?: string;
+  driveType?: string;
+  fuelType?: string;
+  engineCylinders?: string;
+  displacementL?: string;
+  gvwr?: string;
 }
 
 export interface CustomerInfo {
