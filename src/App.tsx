@@ -22,6 +22,7 @@ import BrochureHome from "./pages/brochure/BrochureHome";
 import PlanDetail from "./pages/brochure/PlanDetail";
 import ComparePlans from "./pages/brochure/ComparePlans";
 import TireRimPage from "./pages/brochure/TireRimPage";
+import PurchaseWizard from "./pages/purchase/PurchaseWizard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -71,6 +72,7 @@ const App = () => (
             <Route path="/brochure/compare" element={<ComparePlans />} />
             <Route path="/brochure/tire-rim" element={<TireRimPage />} />
             <Route path="/brochure/:planSlug" element={<PlanDetail />} />
+            <Route path="/purchase" element={<PurchaseWizard />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
