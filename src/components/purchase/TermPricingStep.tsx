@@ -72,14 +72,12 @@ const TermPricingStep = ({ state, updateState, onNext, onBack }: StepProps) => {
       )}
 
       {/* Auto-select tier if only one */}
-      {tiers.length === 1 && state.selectedTierIndex === null && (
+      {tiers.length === 1 && (
         <div className="mb-6">
           <div className="flex items-center gap-2">
             <Badge variant="secondary">${tiers[0].perClaimAmount.toLocaleString()} Per Claim</Badge>
             <Badge variant="outline">${tiers[0].deductible} Deductible</Badge>
           </div>
-          {/* Auto-set */}
-          {(() => { if (state.selectedTierIndex === null) updateState({ selectedTierIndex: 0 }); return null; })()}
         </div>
       )}
 
