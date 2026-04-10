@@ -18,6 +18,8 @@ export interface WarrantyPlan {
   slug: string;
   provider: string;
   tier?: string;
+  /** Plans sharing a group slug are shown as one card with sub-tier tabs */
+  group?: string;
   eligibility: string;
   claimRange: string;
   deductible: string;
@@ -82,7 +84,7 @@ export const warrantyPlans: WarrantyPlan[] = [
     name: "Powertrain Bronze",
     slug: "powertrain-bronze",
     provider: "A-Protect",
-    tier: "Bronze",
+    group: "powertrain",
     eligibility: "Any Year, Make, Model or Mileage",
     claimRange: "$750 Per Claim",
     deductible: "$100",
@@ -115,7 +117,7 @@ export const warrantyPlans: WarrantyPlan[] = [
     name: "Powertrain Silver",
     slug: "powertrain-silver",
     provider: "A-Protect",
-    tier: "Silver",
+    group: "powertrain",
     eligibility: "Any Year, Make, Model or Mileage",
     claimRange: "$1,000 Per Claim",
     deductible: "$100",
@@ -151,7 +153,7 @@ export const warrantyPlans: WarrantyPlan[] = [
     name: "Powertrain Gold",
     slug: "powertrain-gold",
     provider: "A-Protect",
-    tier: "Gold",
+    group: "powertrain",
     eligibility: "Any Year, Make, Model or Mileage",
     claimRange: "$1,500 Per Claim",
     deductible: "$100",
@@ -189,7 +191,7 @@ export const warrantyPlans: WarrantyPlan[] = [
     name: "Powertrain Platinum",
     slug: "powertrain-platinum",
     provider: "A-Protect",
-    tier: "Platinum",
+    group: "powertrain",
     eligibility: "Any Year, Make, Model or Mileage",
     claimRange: "$2,500 – $3,000 Per Claim",
     deductible: "$100",
@@ -791,4 +793,21 @@ export const getPlansByProvider = (provider: string) => {
 
 export const getPlanBySlug = (slug: string) => {
   return warrantyPlans.find(p => p.slug === slug);
+};
+
+/** Get plans grouped: plans sharing a `group` are collapsed into one entry (first plan). */
+export const getGroupedPlans = (provider: string) => {
+  const plans = warrantyPlans.filter(p => p.provider === provider);
+  const seen = new Set<string>();
+  return plans.filter(p => {
+    if (!p.group) return true;
+    if (seen.has(p.group)) return false;
+    seen.add(p.group);
+    return true;
+  });
+};
+
+/** Get all plans in a group */
+export const getPlansByGroup = (group: string) => {
+  return warrantyPlans.filter(p => p.group === group);
 };

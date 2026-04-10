@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Shield, BarChart3 } from "lucide-react";
 import BrochureHeader from "@/components/brochure/BrochureHeader";
 import PlanCard from "@/components/brochure/PlanCard";
-import { warrantyPlans } from "@/data/warrantyPlans";
+import { getGroupedPlans, getPlansByGroup } from "@/data/warrantyPlans";
 import { tireRimTiers } from "@/data/tireRimPlans";
 
 const PROVIDERS = [
@@ -25,7 +25,7 @@ const BrochureHome = () => {
     );
   };
 
-  const plans = warrantyPlans.filter(p => p.provider === selectedProvider);
+  const plans = getGroupedPlans(selectedProvider);
 
   return (
     <div className="min-h-screen bg-background">
@@ -103,14 +103,19 @@ const BrochureHome = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {plans.map(plan => (
-            <PlanCard
-              key={plan.slug}
-              plan={plan}
-              isSelected={compareSlugs.includes(plan.slug)}
-              onToggleCompare={toggleCompare}
-            />
-          ))}
+          {plans.map(plan => {
+            // For grouped plans, show the group info
+            const groupPlans = plan.group ? getPlansByGroup(plan.group) : null;
+            return (
+              <PlanCard
+                key={plan.slug}
+                plan={plan}
+                groupPlans={groupPlans}
+                isSelected={compareSlugs.includes(plan.slug)}
+                onToggleCompare={toggleCompare}
+              />
+            );
+          })}
         </div>
       </section>
 
