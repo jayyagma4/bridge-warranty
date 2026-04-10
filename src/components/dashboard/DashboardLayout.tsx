@@ -73,9 +73,55 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, navItems, t
             <span className="font-bold text-lg text-foreground">Bridge Warranty</span>
           </div>
 
-          {/* Nav */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
+              if (item.children) {
+                const isExpanded = expandedGroups[item.label] ?? false;
+                const isChildActive = item.children.some((c) => location.pathname === c.href);
+                return (
+                  <div key={item.label}>
+                    <button
+                      onClick={() => setExpandedGroups((prev) => ({ ...prev, [item.label]: !prev[item.label] }))}
+                      className={cn(
+                        "w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                        isChildActive
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <span className="flex items-center gap-3">
+                        <item.icon className="w-4 h-4" />
+                        {item.label}
+                      </span>
+                      {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    </button>
+                    {isExpanded && (
+                      <div className="ml-4 pl-3 border-l border-border space-y-1 mt-1">
+                        {item.children.map((child) => {
+                          const isActive = location.pathname === child.href;
+                          return (
+                            <Link
+                              key={child.href}
+                              to={child.href}
+                              onClick={() => setSidebarOpen(false)}
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                                isActive
+                                  ? "bg-primary text-primary-foreground"
+                                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                              )}
+                            >
+                              <child.icon className="w-4 h-4" />
+                              {child.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               const isActive = location.pathname === item.href;
               return (
                 <Link
