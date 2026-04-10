@@ -497,6 +497,13 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Roadside Coverage", "Trip Interruption", "Alternator/Starter/Solenoid", "Water Pump", "Air Conditioning", "Electrical", "Seals & Gaskets", "Wear & Tear", "Car Rental"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Air Conditioning", "Electrical", "Seals & Gaskets", "Wear & Tear"].includes(c.name))],
     benefits: SHARED_BENEFITS,
+    importantNotes: [
+      "Includes Alternator, Starter Motor, and Starter Motor Solenoid coverage.",
+      "Includes Water Pump coverage.",
+      "Air Conditioning and Electrical systems are included in the base price — not add-ons.",
+      "Premium Vehicle Fee applies to $4,000 and $5,000 per-claim tiers.",
+      "Hi-Tech ELITE add-on available on $4,000/claim tier and above.",
+    ],
     pricingTiers: [
       {
         perClaimAmount: 3000,
