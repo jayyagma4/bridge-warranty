@@ -52,7 +52,7 @@ const BrochureHome = () => {
                   Browse Plans <ArrowRight className="ml-1 h-4 w-4" />
                 </a>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
+              <Button asChild variant="outline" size="lg" className="border-white/20 text-white bg-accent hover:bg-accent/90">
                 <Link to="/brochure/compare">
                   <BarChart3 className="mr-1 h-4 w-4" /> Compare Plans
                 </Link>
