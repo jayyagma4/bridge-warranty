@@ -72,6 +72,7 @@ const App = () => (
             <Route path="/brochure/compare" element={<ComparePlans />} />
             <Route path="/brochure/tire-rim" element={<TireRimPage />} />
             <Route path="/brochure/:planSlug" element={<PlanDetail />} />
+            <Route path="/purchase" element={<PurchaseWizard />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
