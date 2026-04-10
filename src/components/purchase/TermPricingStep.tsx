@@ -24,6 +24,13 @@ const TermPricingStep = ({ state, updateState, onNext, onBack }: StepProps) => {
     return typeof val === "number" ? val : null;
   }, [selectedTier, state.selectedTermIndex]);
 
+  // Auto-select tier if only one option
+  useEffect(() => {
+    if (tiers.length === 1 && state.selectedTierIndex === null) {
+      updateState({ selectedTierIndex: 0 });
+    }
+  }, [tiers.length, state.selectedTierIndex]);
+
   if (!plan) return null;
 
   const handleTierSelect = (tierIndex: number) => {
