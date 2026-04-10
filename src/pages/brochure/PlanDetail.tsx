@@ -128,13 +128,15 @@ const PlanDetail = () => {
                     ${minPrice.toLocaleString()}
                     {maxPrice !== minPrice && ` – $${maxPrice.toLocaleString()}`}
                   </span>
-                   <span className="text-white/40 text-sm">starting price range</span>
-                  </div>
-                <Button asChild size="lg" className="mt-4 bg-accent text-[#0f1b3d] hover:bg-accent/90 font-semibold">
-                  <Link to={`/purchase?plan=${plan.slug}`}>
-                    Get a Quote →
-                  </Link>
-                </Button>
+                  <span className="text-white/40 text-sm">starting price range</span>
+                </div>
+              )}
+
+              <Button asChild size="lg" className="mt-4 bg-accent text-[#0f1b3d] hover:bg-accent/90 font-semibold">
+                <Link to={`/purchase?plan=${plan.slug}`}>
+                  Get a Quote →
+                </Link>
+              </Button>
 
               {/* Included coverage checklist */}
               <div className="mt-6">
