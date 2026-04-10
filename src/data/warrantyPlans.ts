@@ -33,7 +33,89 @@ export interface WarrantyPlan {
     makes: string[];
     note: string;
   };
+  /** Important notes specific to this plan */
+  importantNotes?: string[];
+  /** Specific exclusions for this plan beyond the general ones */
+  planExclusions?: string[];
 }
+
+// ═══════════════════════════════════════════════
+// GENERAL TERMS, CONDITIONS & EXCLUSIONS
+// These apply to ALL A-Protect warranty plans
+// ═══════════════════════════════════════════════
+
+export const GENERAL_TERMS: { heading: string; items: string[] }[] = [
+  {
+    heading: "Coverage Conditions",
+    items: [
+      "Coverage begins on the date of purchase or the date the vehicle is delivered, whichever is later.",
+      "All covered repairs must be performed at an A-Protect Authorized Repair Centre or with prior authorization from A-Protect.",
+      "Coverage is limited to the lesser of the per-claim amount or the actual cost of repair.",
+      "A-Protect reserves the right to inspect any vehicle before or after repairs are made.",
+      "All repairs must use parts of like kind and quality. A-Protect is not obligated to use new or OEM parts.",
+      "The contract holder must present the warranty contract at the time of repair.",
+      "Coverage is non-transferable unless otherwise stated.",
+      "Pre-existing conditions are not covered. Any condition that existed prior to the effective date of the contract is excluded.",
+      "A-Protect is not responsible for any consequential or incidental damages arising from a breakdown.",
+    ],
+  },
+  {
+    heading: "Maintenance Requirements",
+    items: [
+      "The vehicle must be maintained in accordance with the manufacturer's recommended maintenance schedule.",
+      "Failure to maintain the vehicle as recommended by the manufacturer may void coverage.",
+      "Proof of maintenance may be required at the time of a claim. Keep all maintenance records and receipts.",
+      "Oil and filter changes must be performed at intervals not exceeding the manufacturer's recommendations.",
+      "All required fluids must be maintained at proper levels and changed at recommended intervals.",
+    ],
+  },
+  {
+    heading: "Claims Process",
+    items: [
+      "Contact A-Protect at the toll-free number listed on your contract BEFORE any repairs are started.",
+      "Prior authorization is required for all covered repairs. Unauthorized repairs will not be reimbursed.",
+      "The repair facility must provide a complete diagnosis and cost estimate to A-Protect before beginning work.",
+      "A-Protect may require a tear-down inspection to verify the cause of failure. Tear-down costs are covered if the claim is approved.",
+      "Claims must be submitted within 30 days of the repair date.",
+      "Payment is made directly to the repair facility or as reimbursement to the contract holder with valid receipts.",
+    ],
+  },
+  {
+    heading: "Cancellation & Refund",
+    items: [
+      "The contract may be cancelled within 30 days of purchase for a full refund, less any claims paid.",
+      "After 30 days, a pro-rata refund will be issued based on the remaining coverage period, less a $75 administrative fee and any claims paid.",
+      "Refunds are processed within 30 business days of the cancellation request.",
+    ],
+  },
+];
+
+export const GENERAL_EXCLUSIONS: string[] = [
+  "Pre-existing conditions — any condition, defect, or malfunction that existed before the contract effective date.",
+  "Damage caused by accident, collision, fire, theft, vandalism, riot, explosion, lightning, earthquake, freezing, rust, corrosion, or water/flood damage.",
+  "Damage caused by misuse, abuse, negligence, racing, or competition.",
+  "Damage caused by failure to maintain the vehicle in accordance with the manufacturer's recommended maintenance schedule.",
+  "Damage caused by contaminated or improper fuel, fluids, or lubricants.",
+  "Normal maintenance services including but not limited to: tune-ups, spark plugs, filters, belts, hoses, brake pads/shoes/rotors/drums, clutch disc/pressure plate/throw-out bearing, wiper blades, bulbs, fuses, batteries, tires, wheel alignment, exhaust system, and shock absorbers/struts.",
+  "Any repair covered under any manufacturer's warranty, recall, or service campaign.",
+  "Aftermarket, modified, or non-factory-installed parts and any damage caused by their installation or use.",
+  "Commercial use vehicles (except where specifically noted as eligible, e.g., Driver Program, Pro Warranty).",
+  "Vehicles used primarily for towing, plowing, or off-road purposes.",
+  "Cosmetic and appearance items including paint, trim, moldings, bright metal, glass, upholstery, carpet, and weather stripping.",
+  "Damage from environmental conditions including road salt, tree sap, bird droppings, industrial fallout, or sun damage.",
+  "Exhaust system components including catalytic converter, muffler, exhaust pipes, and O2 sensors (unless specifically listed as covered).",
+  "Refrigerant (Freon) and recharge — labour and materials for A/C system recharge are excluded even when A/C components are covered.",
+  "Consequential or incidental damages including loss of use, loss of time, inconvenience, commercial loss, or any other indirect damages.",
+  "Diagnostics charges beyond the covered free diagnostic inspection.",
+  "Axle seals — excluded from Seals & Gaskets coverage.",
+  "ABS brakes — excluded from standard Brakes coverage.",
+];
+
+export const COVERAGE_TERRITORY = "Coverage is valid throughout Canada and the continental United States (including Alaska). Repairs performed outside this territory are not covered.";
+
+export const WAITING_PERIOD = "There is a 30-day and 1,000 km waiting period from the contract effective date before coverage begins. Breakdowns occurring during the waiting period are not covered. The waiting period does not apply to Powertrain Bronze or Powertrain Silver plans with 3-month terms.";
+
+export const DISPUTE_RESOLUTION = "Any dispute arising under or related to this contract shall be resolved through binding arbitration in accordance with applicable provincial/state arbitration laws. The arbitration shall take place in the province/state where the contract was purchased.";
 
 const PREMIUM_MAKES = [
   "BMW", "Mercedes", "Audi", "Tesla", "Porsche", "Jaguar", "Lamborghini",
@@ -93,6 +175,12 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Trip Interruption"],
     coverageDetails: POWERTRAIN_COVERAGE_DETAILS,
     benefits: SHARED_BENEFITS.filter(b => !["Roadside Coverage", "Car Rental"].includes(b.name)),
+    importantNotes: [
+      "Light duty commercial vehicles are eligible for Powertrain coverage.",
+      "Powertrain coverage includes internal lubricated parts only.",
+      "Coverage is limited to one claim per covered component during the contract term.",
+      "Turbo/Supercharger coverage applies only to factory-installed units.",
+    ],
     pricingTiers: [{
       perClaimAmount: 750,
       deductible: 100,
@@ -126,6 +214,11 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Trip Interruption"],
     coverageDetails: POWERTRAIN_COVERAGE_DETAILS,
     benefits: SHARED_BENEFITS.filter(b => !["Roadside Coverage", "Car Rental"].includes(b.name)),
+    importantNotes: [
+      "Add-on options (Unlimited km, Zero Deductible, Seals & Gaskets, Car Rental) are available at additional cost per term selected.",
+      "\"n/a\" indicates the add-on is not available for that specific term length.",
+      "Coverage is limited to one claim per covered component during the contract term.",
+    ],
     pricingTiers: [{
       perClaimAmount: 1000,
       deductible: 100,
@@ -162,6 +255,11 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Trip Interruption"],
     coverageDetails: POWERTRAIN_COVERAGE_DETAILS,
     benefits: SHARED_BENEFITS.filter(b => !["Roadside Coverage", "Car Rental"].includes(b.name)),
+    importantNotes: [
+      "3-month and 6-month terms include Unlimited km at no extra cost.",
+      "Air Conditioning and Hi-Tech Components add-ons are only available on 12-month or longer terms.",
+      "Add-on options are available at additional cost per term selected.",
+    ],
     pricingTiers: [{
       perClaimAmount: 1500,
       deductible: 100,
@@ -200,6 +298,12 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Trip Interruption"],
     coverageDetails: POWERTRAIN_COVERAGE_DETAILS,
     benefits: SHARED_BENEFITS.filter(b => !["Roadside Coverage", "Car Rental"].includes(b.name)),
+    importantNotes: [
+      "Two claim tiers available: $2,500/claim and $3,000/claim with separate pricing.",
+      "6-month term at the $2,500 tier includes Unlimited km at no extra cost.",
+      "48-month term does not offer Unlimited km add-on.",
+      "Air Conditioning and Hi-Tech Components add-ons are only available on 12-month or longer terms.",
+    ],
     pricingTiers: [
       {
         perClaimAmount: 2500,
@@ -258,6 +362,15 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Roadside Coverage", "Trip Interruption", "Seals & Gaskets", "Wear & Tear", "Car Rental"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Seals & Gaskets", "Wear & Tear"].includes(c.name))],
     benefits: SHARED_BENEFITS,
+    importantNotes: [
+      "Seals & Gaskets and Wear & Tear coverage are included at no additional cost.",
+      "Car Rental benefit is included with all Essential Warranty tiers.",
+      "Roadside Coverage included: towing, fuel delivery, battery boost, lockout, tire change, winching — max 3 calls per term.",
+      "Eligible vehicles up to 220,000 km for $7,500 and $10,000 per-claim tiers.",
+      "Premium Vehicle Fee applies to $5,000, $7,500 and $10,000 per-claim tiers for select makes. Fee is in addition to the base price.",
+      "Hybrid Components add-on available on $3,000/claim tier and above.",
+      "Hi-Tech ELITE (vs. Hi-Tech Components) is available on $5,000/claim tier and above — includes additional items such as anti-theft module, body control module, sunroof motor, and more.",
+    ],
     pricingTiers: [
       {
         perClaimAmount: 1000,
@@ -384,6 +497,13 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Roadside Coverage", "Trip Interruption", "Alternator/Starter/Solenoid", "Water Pump", "Air Conditioning", "Electrical", "Seals & Gaskets", "Wear & Tear", "Car Rental"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Air Conditioning", "Electrical", "Seals & Gaskets", "Wear & Tear"].includes(c.name))],
     benefits: SHARED_BENEFITS,
+    importantNotes: [
+      "Includes Alternator, Starter Motor, and Starter Motor Solenoid coverage.",
+      "Includes Water Pump coverage.",
+      "Air Conditioning and Electrical systems are included in the base price — not add-ons.",
+      "Premium Vehicle Fee applies to $4,000 and $5,000 per-claim tiers.",
+      "Hi-Tech ELITE add-on available on $4,000/claim tier and above.",
+    ],
     pricingTiers: [
       {
         perClaimAmount: 3000,
@@ -461,6 +581,13 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Roadside Coverage", "Trip Interruption", "Alternator/Starter/Solenoid", "Water Pump", "Air Conditioning", "Brakes", "Cooling System", "Electrical", "Front Suspension", "Fuel System", "Power Steering", "Seals & Gaskets", "Supplementary Parts", "Car Rental", "Wear & Tear"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Air Conditioning", "Brakes", "Cooling System", "Electrical", "Fuel System", "Front Suspension", "Power Steering", "Seals & Gaskets", "Supplementary Parts", "Wear & Tear"].includes(c.name))],
     benefits: SHARED_BENEFITS,
+    importantNotes: [
+      "Most comprehensive standard coverage — includes Brakes, Cooling System, Fuel System, Front Suspension, Power Steering, and Supplementary Parts in the base price.",
+      "Brakes coverage includes master cylinder, calipers, vacuum booster, wheel cylinders, flex hoses, hydraulic lines and fittings, proportioning valve. Excludes ABS brakes.",
+      "Front Suspension includes control arms (upper/lower), control arm bushings, ball joints, and steering knuckles.",
+      "Premium Vehicle Fee applies to $2,500 and $3,000 per-claim tiers.",
+      "Hi-Tech Components and Hybrid Components add-ons available on $2,500/claim tier and above.",
+    ],
     pricingTiers: [
       {
         perClaimAmount: 1000,
@@ -544,6 +671,16 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Roadside Coverage", "Trip Interruption", "Alternator/Starter/Solenoid", "Water Pump", "Air Conditioning", "Brakes", "Cooling System", "Electrical", "Front & Rear Suspension", "Fuel System", "Hi-Tech Components", "Power Steering", "Seals & Gaskets", "Supplementary Parts", "Car Rental", "Wear & Tear", "Zero Deductible"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Air Conditioning", "Brakes", "Cooling System", "Electrical", "Fuel System", "Front Suspension", "Rear Suspension", "Power Steering", "Seals & Gaskets", "Supplementary Parts", "Wear & Tear", "Hi-Tech Components"].includes(c.name))],
     benefits: SHARED_BENEFITS,
+    importantNotes: [
+      "Zero deductible is included — no additional cost for the $0 deductible.",
+      "Hi-Tech Components coverage is included in the base price.",
+      "Eligibility: Vehicle must be 7 years or newer and up to 160,000 km at time of purchase.",
+      "Pricing is based on current vehicle mileage at time of contract purchase (0–60K, 60K–100K, 100K–160K km bands).",
+      "Front AND Rear Suspension coverage included — both upper and lower control arms, bushings, and ball joints.",
+      "Powertrain PLUS add-on adds extensive engine management, 4x4/drivetrain electronics, ABS, airbag modules, and emission components.",
+      "Hi-Tech ELITE upgrade adds anti-theft module, body control module, sunroof motor, TPMS, keyless entry, and more beyond standard Hi-Tech.",
+      "Premium Vehicle Fee for Diamond Plus does NOT apply to standard Mercedes — only Mercedes AMG models.",
+    ],
     pricingTiers: [
       {
         perClaimAmount: 5000,
@@ -646,6 +783,13 @@ export const warrantyPlans: WarrantyPlan[] = [
     highlights: ["Rideshare & delivery vehicles", "Seals & Gaskets included", "Wear & Tear included", "30 min free diagnostics"],
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Roadside Coverage", "Trip Interruption", "Alternator/Starter/Solenoid", "Water Pump", "Seals & Gaskets", "Wear & Tear"],
     coverageDetails: [...POWERTRAIN_COVERAGE_DETAILS, ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Seals & Gaskets", "Wear & Tear"].includes(c.name))],
+    importantNotes: [
+      "Designed specifically for rideshare (Uber, Lyft) and delivery (DoorDash, Skip, etc.) vehicles.",
+      "Vehicle must be 10 years or newer and up to 180,000 km at time of purchase.",
+      "Free diagnostics is extended to 30 minutes (vs. 20 min standard) at A-Protect Authorized Repair Centre.",
+      "\"Add extra 10,000 km\" option available on 24-month and 36-month terms for additional coverage distance.",
+      "12-month terms include Unlimited km at no extra cost.",
+    ],
     benefits: [
       ...SHARED_BENEFITS.filter(b => b.name !== "Free Diagnostics"),
       { name: "Free Diagnostics", description: "Free 30 min visual, scan and road test at A-Protect Authorized Repair Centre.", limit: "Included" },
@@ -708,6 +852,16 @@ export const warrantyPlans: WarrantyPlan[] = [
       ...ADDITIONAL_COVERAGE_DETAILS.filter(c => ["Air Conditioning", "Fuel System", "Seals & Gaskets", "Wear & Tear"].includes(c.name)),
       { name: "Diesel Components", parts: "Fuel pumps, injection & distribution pumps, diesel exhaust fluid (DEF) tank, diesel exhaust fluid (DEF) heater, sending unit, fuel injectors, fuel rails, fuel hard lines, pressure regulator, vacuum pump, high pressure oil pump, high pressure injection pump, glow plugs, glow plug harness, glow plug controller, pump mounted driver module and diesel nitrogen oxygen (NOx) sensor." },
       { name: "GPS & Tech Package", parts: "Back up camera, digital display/gps monitor (including touchscreen), bluetooth/handsfree module, gps control module, power door lock keypad, keyless entry door handle sensor, keyless entry/remote door lock receiver, touchscreen interface module, parking assist module and sensors, tire pressure monitoring system module, wi-fi/mobile data control module." },
+    ],
+    importantNotes: [
+      "Designed for light-duty commercial trucks and vans.",
+      "Includes Diesel Components coverage: fuel pumps, injection pumps, DEF tank/heater, glow plugs/harness/controller, high pressure oil pump, and NOx sensor.",
+      "GPS & Tech Package add-on available: includes backup camera, touchscreen/GPS monitor, bluetooth module, parking assist sensors, TPMS module, and wi-fi module.",
+      "Vehicle must be 10 years or newer and up to 200,000 km for the $5,000/claim tier.",
+      "Vehicle must be 8 years or newer and up to 160,000 km for the $10,000/claim tier.",
+      "$10,000/claim tier has a $250 deductible (vs. $100 for the $5,000 tier).",
+      "Free diagnostics is extended to 30 minutes at A-Protect Authorized Repair Centre.",
+      "\"Add extra 10,000 km\" option available on select terms.",
     ],
     benefits: [
       ...SHARED_BENEFITS.filter(b => b.name !== "Free Diagnostics"),
@@ -778,6 +932,13 @@ export const warrantyPlans: WarrantyPlan[] = [
       { name: "Seals & Gaskets", parts: ADDITIONAL_COVERAGE_DETAILS.find(c => c.name === "Seals & Gaskets")?.parts || "" },
     ].filter((v, i, a) => a.findIndex(t => t.name === v.name) === i),
     benefits: SHARED_BENEFITS,
+    importantNotes: [
+      "This is an add-on product — it extends coverage BEYOND what the manufacturer's powertrain warranty covers.",
+      "Only available for vehicles that currently have an active manufacturer powertrain warranty.",
+      "Zero deductible is included at no additional cost.",
+      "Covers components NOT included in the manufacturer's powertrain warranty: Electrical, Fuel System, A/C, Brakes, Suspension, Power Steering, Supplementary Parts, and more.",
+      "No standalone pricing — sold in conjunction with existing manufacturer warranty through your dealership.",
+    ],
     pricingTiers: [], // No standalone pricing — sold as add-on to manufacturer warranty
   },
 ];

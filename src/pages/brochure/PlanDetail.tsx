@@ -6,6 +6,7 @@ import BrochureHeader from "@/components/brochure/BrochureHeader";
 import CoverageAccordion from "@/components/brochure/CoverageAccordion";
 import PricingTable from "@/components/brochure/PricingTable";
 import BenefitsSection from "@/components/brochure/BenefitsSection";
+import FinePrintSection from "@/components/brochure/FinePrintSection";
 import { getPlanBySlug, getPlansByGroup } from "@/data/warrantyPlans";
 import { useState, useMemo } from "react";
 
@@ -13,7 +14,7 @@ const PlanDetail = () => {
   const { planSlug } = useParams<{ planSlug: string }>();
   const navigate = useNavigate();
   const plan = getPlanBySlug(planSlug || "");
-  const [activeSection, setActiveSection] = useState<"overview" | "coverage" | "pricing" | "benefits">("overview");
+  const [activeSection, setActiveSection] = useState<"overview" | "coverage" | "pricing" | "benefits" | "fine-print">("overview");
 
   // Get sibling plans if this plan is in a group
   const groupPlans = useMemo(() => {
@@ -59,6 +60,7 @@ const PlanDetail = () => {
     { key: "coverage" as const, label: "What's Covered" },
     ...(hasPricing ? [{ key: "pricing" as const, label: "Pricing & Options" }] : []),
     { key: "benefits" as const, label: "Benefits" },
+    { key: "fine-print" as const, label: "Terms & Conditions" },
   ];
 
   return (
@@ -385,6 +387,17 @@ const PlanDetail = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeSection === "fine-print" && (
+          <div className="space-y-6">
+            <h2 className="font-display text-xl font-bold text-foreground mb-4">Terms, Conditions & Exclusions</h2>
+            <FinePrintSection
+              importantNotes={plan.importantNotes}
+              planExclusions={plan.planExclusions}
+              premiumVehicleFee={plan.premiumVehicleFee}
+            />
           </div>
         )}
       </div>
