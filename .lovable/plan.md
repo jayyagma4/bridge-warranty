@@ -1,38 +1,92 @@
 
 
-## Plan: Add Suggested Selling Badges & Visual Highlights to Plan Selection
+## Plan: Build Dealership Dashboard Suite
+
+### Context
+Your live site has a full dealership experience — dashboard with stats, contracts, remittances, team management, confidentiality pricing, settings, and reporting. The Lovable project has the database schema, auth, and nav items defined, but is missing most dealership pages. This plan builds them all.
 
 ### What we're building
-High-conversion visual cues on the plan selection step — "Most Popular", "Best Value", "Top Pick" badges with glowing borders and accent styling to guide buyers toward recommended plans.
 
-### Approach
+**1. Dealership Dashboard (Overview Page)** — `/dealership`
+- Stats cards: Contracts Created, Active, Draft, Revenue, Pending Payment, Submitted Batches, Avg Per Contract, Top Product
+- Sales Trend chart (last 6 months)
+- Quick Actions panel linking to Contracts, Find Products, Team, Remittances
+- Top Products and Top Performers sections
+- All data pulled from contracts/remittances tables filtered by dealership
 
-**1. Add a `salesTag` field to `WarrantyPlan` interface** (`src/data/warrantyPlans.ts`)
-- New optional field: `salesTag?: { label: string; type: "popular" | "value" | "pick" }`
-- Assign tags to specific plans:
-  - **Essential Warranty** → `"Most Popular"` (type: `popular`) — best all-around coverage
-  - **Powertrain Platinum** → `"Best Value"` (type: `value`) — strong coverage at competitive price
-  - **Diamond Plus** → `"Top Pick"` (type: `pick`) — maximum protection
+**2. Contracts Page** — `/dealership/contracts`
+- Table of all contracts with status tabs (Draft, Sold, Active, Expired, Cancelled)
+- Search/filter by customer name, VIN, product
+- Create new contract button (links to purchase wizard)
+- Status badge styling, date formatting
+- Actions: View details, mark as sold, cancel
 
-**2. Update `PlanSelectionStep.tsx`** — the purchase wizard plan cards
-- If a plan has a `salesTag`, render a floating badge at the top-right of the card
-- Apply a colored glow/ring effect based on tag type:
-  - `popular` → gold/amber glow + ring (`ring-amber-400/40 shadow-amber-400/20`)
-  - `value` → green glow (`ring-emerald-400/40 shadow-emerald-400/20`)
-  - `pick` → blue/primary glow (`ring-primary/40 shadow-primary/20`)
-- Add a subtle animated pulse on the badge to draw attention
-- Sort tagged plans to appear first in the list (tagged plans float to top)
+**3. Remittances Page** — `/dealership/remittances`
+- "Create Remittance" section with Ready to Remit / All Sold toggle
+- Select sold contracts to batch, assign remittance number, provider total
+- Remittance History table with status tabs (Draft, Submitted, Approved, Rejected, Paid)
+- Search remittances
 
-**3. Update `PlanCard.tsx`** — the brochure browse cards
-- Same badge treatment so the suggested selling is consistent across brochure and purchase flows
+**4. Team Management Page** — `/dealership/settings/team`
+- List team members with role badges (Admin/Employee), status (Active), join date
+- Add Member dialog (email, name, phone, role selection)
+- Edit member details, Disable/Enable member
+- Count indicators (Active, Admins)
 
-### Visual result
-- Tagged plan cards will have a colored ring border and soft outer glow
-- A small pill badge sits at the top-right corner with the label (e.g. "⭐ Most Popular")
-- Non-tagged plans remain visually neutral — the contrast naturally draws the eye to recommended options
+**5. Confidentiality Pricing (Retail Pricing)** — `/dealership/settings/configuration`
+- Toggle switch: "Confidentiality Pricing" on/off
+- Product list filtered by provider
+- Select a product to configure retail markup pricing per term/tier
+- Two modes: Dealer Internal Cost vs Confidentiality (Retail) Pricing
+- Markup stored per dealership per product (new `dealership_product_pricing` table)
 
-### Files changed
-- `src/data/warrantyPlans.ts` — add `salesTag` to interface + assign to 3 plans
-- `src/components/purchase/PlanSelectionStep.tsx` — render badges, glow styles, sort order
-- `src/components/brochure/PlanCard.tsx` — render badges on brochure cards too
+**6. Profile Page** — `/dealership/settings/profile`
+- Edit user profile: name, email, phone, password change
+
+**7. Settings with Sub-navigation**
+- Update dealership nav to include Settings as expandable group with Configuration, Team, Profile sub-items (matching your live sidebar screenshot)
+
+**8. Reporting Page** — `/dealership/reporting`
+- Sales by product, by month, by employee
+- Revenue trends, contract volume
+
+### Database changes needed
+- New table: `dealership_product_pricing` (dealership_id, product_id, retail_price jsonb, created_at, updated_at) with RLS
+- Add `reporting` nav item to dealership sidebar
+
+### Navigation update
+Update `dealershipNavItems` in DashboardLayout to match live site:
+- Dashboard, Find Products, Contracts, Remittances, Reporting
+- Settings (expandable): Configuration, Team, Profile
+
+### Routes to add
+```text
+/dealership                      → Dashboard overview
+/dealership/contracts            → Contracts list
+/dealership/remittances          → Remittances
+/dealership/reporting            → Reporting
+/dealership/settings/configuration → Confidentiality Pricing
+/dealership/settings/team        → Team Management
+/dealership/settings/profile     → Profile
+```
+
+### Files to create/edit
+- **Create**: `src/pages/dealership/DealershipOverview.tsx`
+- **Create**: `src/pages/dealership/DealershipContracts.tsx`
+- **Create**: `src/pages/dealership/DealershipRemittances.tsx`
+- **Create**: `src/pages/dealership/DealershipReporting.tsx`
+- **Create**: `src/pages/dealership/settings/Configuration.tsx` (Confidentiality Pricing)
+- **Create**: `src/pages/dealership/settings/TeamManagement.tsx`
+- **Create**: `src/pages/dealership/settings/Profile.tsx`
+- **Edit**: `src/components/dashboard/DashboardLayout.tsx` — update nav with Settings sub-group
+- **Edit**: `src/App.tsx` — add all new routes with ProtectedRoute
+- **Migration**: `dealership_product_pricing` table for retail markup storage
+
+### Implementation order
+1. Dashboard overview + routes + nav update
+2. Contracts page
+3. Remittances page
+4. Team management
+5. Confidentiality Pricing (configuration)
+6. Profile + Reporting
 
