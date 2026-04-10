@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ShieldCheck, Car, Clock, Plus, User, CreditCard } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Car, Clock, Plus, User, Printer } from "lucide-react";
 import { getPlanBySlug } from "@/data/warrantyPlans";
 import { toast } from "@/hooks/use-toast";
 import type { PurchaseState } from "./types";
@@ -42,16 +42,16 @@ const ReviewStep = ({ state, onBack }: ReviewStepProps) => {
 
   const total = basePrice + addOnPrices.reduce((s, a) => s + a.price, 0);
 
-  const handlePurchase = async () => {
+  const handlePrintQuote = () => {
     setSubmitting(true);
-    // TODO: Integrate with Stripe payment
     setTimeout(() => {
-      toast({
-        title: "Purchase flow ready",
-        description: "Stripe payment integration will be connected here. Your contract details have been captured.",
-      });
+      window.print();
       setSubmitting(false);
-    }, 1500);
+      toast({
+        title: "Quote ready",
+        description: "Your warranty quote has been prepared for printing.",
+      });
+    }, 500);
   };
 
   if (!plan || !tier || !term || !state.vehicle) return null;
@@ -152,9 +152,9 @@ const ReviewStep = ({ state, onBack }: ReviewStepProps) => {
         <Button variant="outline" onClick={onBack}>
           <ArrowLeft className="h-4 w-4 mr-1" /> Back
         </Button>
-        <Button onClick={handlePurchase} disabled={submitting} size="lg">
-          <CreditCard className="h-4 w-4 mr-1" />
-          {submitting ? "Processing..." : `Pay $${total.toLocaleString()}`}
+        <Button onClick={handlePrintQuote} disabled={submitting} size="lg">
+          <Printer className="h-4 w-4 mr-1" />
+          {submitting ? "Preparing..." : "Print Quote"}
         </Button>
       </div>
     </Card>
