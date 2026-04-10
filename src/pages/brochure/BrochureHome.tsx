@@ -57,7 +57,7 @@ const BrochureHome = () => {
                   <ShoppingCart className="mr-1 h-4 w-4" /> Get a Quote
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
+              <Button asChild variant="outline" size="lg" className="border-white/20 text-white bg-accent">
                 <Link to="/brochure/compare">
                   <BarChart3 className="mr-1 h-4 w-4" /> Compare Plans
                 </Link>
