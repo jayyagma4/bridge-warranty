@@ -214,6 +214,11 @@ export const warrantyPlans: WarrantyPlan[] = [
     includedCoverage: ["Engine", "Transmission", "Transfer Case/4x4", "Differential", "Turbo/Supercharger", "Towing", "Trip Interruption"],
     coverageDetails: POWERTRAIN_COVERAGE_DETAILS,
     benefits: SHARED_BENEFITS.filter(b => !["Roadside Coverage", "Car Rental"].includes(b.name)),
+    importantNotes: [
+      "Add-on options (Unlimited km, Zero Deductible, Seals & Gaskets, Car Rental) are available at additional cost per term selected.",
+      "\"n/a\" indicates the add-on is not available for that specific term length.",
+      "Coverage is limited to one claim per covered component during the contract term.",
+    ],
     pricingTiers: [{
       perClaimAmount: 1000,
       deductible: 100,
