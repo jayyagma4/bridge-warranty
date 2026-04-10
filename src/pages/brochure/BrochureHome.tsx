@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Shield, BarChart3, ShoppingCart, ChevronRight, Check } from "lucide-react";
+import { ArrowRight, Shield, BarChart3, ChevronRight, Check } from "lucide-react";
 import BrochureHeader from "@/components/brochure/BrochureHeader";
 import PlanCard from "@/components/brochure/PlanCard";
 import { getGroupedPlans, getPlansByGroup } from "@/data/warrantyPlans";
@@ -52,12 +52,7 @@ const BrochureHome = () => {
                   Browse Plans <ArrowRight className="ml-1 h-4 w-4" />
                 </a>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white/20 text-white bg-accent hover:bg-accent/90">
-                <Link to="/purchase">
-                  <ShoppingCart className="mr-1 h-4 w-4" /> Get a Quote
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="border-white/20 text-white bg-accent">
+              <Button asChild variant="outline" size="lg" className="border-white/20 text-white bg-accent hover:bg-accent/90">
                 <Link to="/brochure/compare">
                   <BarChart3 className="mr-1 h-4 w-4" /> Compare Plans
                 </Link>

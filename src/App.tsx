@@ -22,6 +22,9 @@ import DealershipOverview from "./pages/dealership/DealershipOverview";
 import DealershipContracts from "./pages/dealership/DealershipContracts";
 import DealershipRemittances from "./pages/dealership/DealershipRemittances";
 import DealershipReporting from "./pages/dealership/DealershipReporting";
+import DealershipPlanDetail from "./pages/dealership/DealershipPlanDetail";
+import DealershipComparePlans from "./pages/dealership/DealershipComparePlans";
+import DealershipTireRim from "./pages/dealership/DealershipTireRim";
 import Configuration from "./pages/dealership/settings/Configuration";
 import TeamManagement from "./pages/dealership/settings/TeamManagement";
 import DealerProfile from "./pages/dealership/settings/Profile";
@@ -80,6 +83,9 @@ const App = () => (
             <Route path="/dealership/settings/configuration" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><Configuration /></ProtectedRoute>} />
             <Route path="/dealership/settings/team" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><TeamManagement /></ProtectedRoute>} />
             <Route path="/dealership/settings/profile" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><DealerProfile /></ProtectedRoute>} />
+            <Route path="/dealership/plans/:planSlug" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><DealershipPlanDetail /></ProtectedRoute>} />
+            <Route path="/dealership/compare" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><DealershipComparePlans /></ProtectedRoute>} />
+            <Route path="/dealership/tire-rim" element={<ProtectedRoute allowedRoles={["dealership_admin", "dealership_employee"]}><DealershipTireRim /></ProtectedRoute>} />
 
             {/* Brochure */}
             <Route path="/brochure" element={<BrochureHome />} />

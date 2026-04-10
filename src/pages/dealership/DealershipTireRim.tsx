@@ -1,0 +1,157 @@
+import { useState } from "react";
+import DashboardLayout, { dealershipNavItems } from "@/components/dashboard/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ArrowLeft, Shield, Check, Star, Info, AlertTriangle, CircleCheck } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  tireRimTiers,
+  vehicleClasses,
+  coveredServices,
+  eligibilityConditions,
+  disclaimers,
+  roadsideCoverageConditions,
+} from "@/data/tireRimPlans";
+
+const DealershipTireRim = () => {
+  const [activeTier, setActiveTier] = useState("essential");
+
+  return (
+    <DashboardLayout navItems={dealershipNavItems} title="Tire & Rim Protection">
+      <div className="space-y-8">
+        <Button asChild variant="ghost" size="sm" className="-ml-2">
+          <Link to="/dealership/find-products">
+            <ArrowLeft className="mr-1 h-4 w-4" /> Back to Products
+          </Link>
+        </Button>
+
+        <div>
+          <Badge className="bg-accent/20 text-accent border-accent/30 mb-2">A-Protect</Badge>
+          <h2 className="font-display text-2xl font-bold text-foreground">Tire & Rim Protection</h2>
+          <p className="text-sm text-muted-foreground mt-1">Coverage Plans — Confidential Price List V25</p>
+        </div>
+
+        {/* Eligibility */}
+        <div className="rounded-lg border border-accent/30 bg-accent/5 p-5 space-y-3">
+          <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-accent" /> Eligibility & Conditions
+          </h3>
+          <ul className="space-y-2">
+            {eligibilityConditions.map((cond, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm">
+                <CircleCheck className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                <div><span className="font-semibold text-foreground">{cond.label}:</span> <span className="text-muted-foreground">{cond.detail}</span></div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Tier cards */}
+        <div className="grid sm:grid-cols-3 gap-5">
+          {tireRimTiers.map(tier => (
+            <div
+              key={tier.slug}
+              onClick={() => setActiveTier(tier.slug)}
+              className={`rounded-lg border p-5 space-y-3 cursor-pointer transition-all ${
+                activeTier === tier.slug ? "ring-2 ring-primary shadow-md border-primary/30" : "hover:border-primary/20 bg-card"
+              } ${tier.bestValue ? "relative" : ""}`}
+            >
+              {tier.bestValue && <Badge className="absolute -top-2.5 right-4 bg-accent text-[#0f1b3d] font-semibold gap-1"><Star className="h-3 w-3" /> Best Value</Badge>}
+              <div className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary" /><h3 className="font-display font-bold text-foreground">{tier.name}</h3></div>
+              <ul className="space-y-1.5">
+                {tier.includes.map((item, i) => (
+                  <li key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground"><Check className="h-3 w-3 text-primary mt-0.5 shrink-0" /> {item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Pricing */}
+        <div className="space-y-6">
+          <h3 className="font-display text-xl font-bold text-foreground">Pricing</h3>
+          <Tabs value={activeTier} onValueChange={setActiveTier}>
+            <TabsList>
+              {tireRimTiers.map(t => (<TabsTrigger key={t.slug} value={t.slug} className="text-xs">{t.name}</TabsTrigger>))}
+            </TabsList>
+            {tireRimTiers.map(tier => (
+              <TabsContent key={tier.slug} value={tier.slug}>
+                <div className="rounded-lg border overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-[#0f1b3d]">
+                        <TableHead className="text-white/80 text-xs font-medium">Term</TableHead>
+                        <TableHead className="text-white/80 text-xs font-medium text-center">Class 1</TableHead>
+                        <TableHead className="text-white/80 text-xs font-medium text-center">Class 2</TableHead>
+                        <TableHead className="text-white/80 text-xs font-medium text-center">Class 3</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {tier.pricing.map((row, i) => (
+                        <TableRow key={i} className="hover:bg-muted/50">
+                          <TableCell className="text-xs font-medium text-foreground">{row.term}</TableCell>
+                          <TableCell className="text-center text-sm font-semibold">${row.class1.toLocaleString()}</TableCell>
+                          <TableCell className="text-center text-sm font-semibold">${row.class2.toLocaleString()}</TableCell>
+                          <TableCell className="text-center text-sm font-semibold">${row.class3.toLocaleString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
+
+        {/* Vehicle classes */}
+        <div className="space-y-4">
+          <h3 className="font-display text-xl font-bold text-foreground">Vehicle Classes</h3>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {vehicleClasses.map(vc => (
+              <div key={vc.classNumber} className="rounded-lg border bg-card p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><span className="font-bold text-primary text-sm">{vc.classNumber}</span></div>
+                  <h4 className="font-semibold text-sm text-foreground">Class {vc.classNumber}</h4>
+                </div>
+                <div className="flex flex-wrap gap-1">{vc.makes.map(make => (<Badge key={make} variant="secondary" className="text-[10px]">{make}</Badge>))}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Covered services */}
+        <div className="space-y-4">
+          <h3 className="font-display text-xl font-bold text-foreground">Covered Services</h3>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {coveredServices.map(service => (
+              <div key={service.name} className="rounded-lg border bg-card p-4 space-y-2">
+                <div className="flex items-start gap-2">
+                  <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-semibold text-sm text-foreground">{service.name}</h4>
+                      <div className="flex gap-1">{service.tiers.map(tier => (<Badge key={tier} variant="outline" className="text-[9px] px-1.5 py-0 capitalize">{tier === "essential" ? "Ess." : tier === "extended" ? "Ext." : "Sup."}</Badge>))}</div>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{service.description}</p>
+                    {service.subItems && (<ul className="space-y-1 ml-1">{service.subItems.map((item, i) => (<li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5"><span className="text-primary mt-0.5 shrink-0">•</span>{item}</li>))}</ul>)}
+                    {service.name === "Roadside Coverage" && (<div className="mt-2 pt-2 border-t border-border/50 space-y-1">{roadsideCoverageConditions.map((cond, i) => (<p key={i} className="text-[11px] text-muted-foreground/80 italic">{cond}</p>))}</div>)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Disclaimers */}
+        <div className="rounded-lg border border-muted bg-muted/20 p-4 space-y-2">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Important Notice</h4>
+          {disclaimers.map((d, i) => (<p key={i} className="text-xs text-muted-foreground italic">{d}</p>))}
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default DealershipTireRim;

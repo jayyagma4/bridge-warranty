@@ -173,7 +173,7 @@ const FindProducts = () => {
               className="w-48 h-9"
             />
             <Button asChild variant="outline" size="sm">
-              <Link to="/brochure/compare">
+              <Link to="/dealership/compare">
                 <BarChart3 className="mr-1.5 h-3.5 w-3.5" /> Compare All
               </Link>
             </Button>
@@ -211,6 +211,7 @@ const FindProducts = () => {
                     groupPlans={groupPlans}
                     isSelected={compareSlugs.includes(plan.slug)}
                     onToggleCompare={toggleCompare}
+                    basePath="/dealership/plans"
                   />
                 );
               })}
@@ -230,7 +231,7 @@ const FindProducts = () => {
               </p>
             </div>
             <Button asChild variant="outline" size="sm">
-              <Link to="/brochure/tire-rim">View All Details <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+              <Link to="/dealership/tire-rim">View All Details <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
             </Button>
           </div>
 
@@ -272,7 +273,7 @@ const FindProducts = () => {
                   </div>
 
                   <Button asChild size="sm" className="w-full gap-1">
-                    <Link to={`/brochure/tire-rim?tier=${tier.slug}`}>
+                    <Link to={`/dealership/tire-rim?tier=${tier.slug}`}>
                       View Details <ChevronRight className="h-3.5 w-3.5" />
                     </Link>
                   </Button>
@@ -286,7 +287,7 @@ const FindProducts = () => {
         {compareSlugs.length >= 2 && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
             <Button asChild size="lg" className="shadow-xl bg-accent text-[#0f1b3d] hover:bg-accent/90 font-semibold gap-2">
-              <Link to={`/brochure/compare?plans=${compareSlugs.join(",")}`}>
+              <Link to={`/dealership/compare?plans=${compareSlugs.join(",")}`}>
                 <BarChart3 className="h-4 w-4" />
                 Compare {compareSlugs.length} Plans
               </Link>
