@@ -750,6 +750,34 @@ export const warrantyPlans: WarrantyPlan[] = [
       },
     ],
   },
+  // ── Top Up Warranty ──────────────────────────────────────────────────
+  {
+    name: "Top Up Warranty",
+    slug: "top-up",
+    provider: "A-Protect",
+    tier: "Add-On",
+    eligibility: "Vehicles with existing manufacturer powertrain warranty",
+    claimRange: "Varies by coverage",
+    deductible: "$0",
+    premiumFees: false,
+    highlights: [
+      "Extends manufacturer powertrain warranty",
+      "Zero deductible included",
+      "Roadside Coverage & Car Rental included",
+    ],
+    includedCoverage: [
+      "Towing", "Trip Interruption", "Roadside Coverage", "Seals & Gaskets",
+      "Car Rental", "Wear & Tear", "Electrical", "Fuel System",
+      "Air Conditioning", "Brakes", "Front Suspension", "Rear Suspension",
+      "Power Steering", "Supplementary Parts", "Zero Deductible",
+    ],
+    coverageDetails: [
+      ...ADDITIONAL_COVERAGE_DETAILS,
+      { name: "Seals & Gaskets", parts: ADDITIONAL_COVERAGE_DETAILS.find(c => c.name === "Seals & Gaskets")?.parts || "" },
+    ].filter((v, i, a) => a.findIndex(t => t.name === v.name) === i),
+    benefits: SHARED_BENEFITS,
+    pricingTiers: [], // No standalone pricing — sold as add-on to manufacturer warranty
+  },
 ];
 
 export const getProviders = () => {
