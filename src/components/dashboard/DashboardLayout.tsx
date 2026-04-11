@@ -232,5 +232,6 @@ export const providerNavItems: NavItem[] = [
   { label: "Products", href: "/provider/products", icon: Package },
   { label: "Contracts", href: "/provider/contracts", icon: FileText },
   { label: "Remittances", href: "/provider/remittances", icon: DollarSign },
+  { label: "Analytics", href: "/provider/analytics", icon: Building2 },
   { label: "Settings", href: "/provider/settings", icon: Settings },
 ];

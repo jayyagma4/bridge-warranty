@@ -33,6 +33,13 @@ import PlanDetail from "./pages/brochure/PlanDetail";
 import ComparePlans from "./pages/brochure/ComparePlans";
 import TireRimPage from "./pages/brochure/TireRimPage";
 import PurchaseWizard from "./pages/purchase/PurchaseWizard";
+import ProviderOverview from "./pages/provider/ProviderOverview";
+import ProviderProducts from "./pages/provider/ProviderProducts";
+import ProviderProductEditor from "./pages/provider/ProviderProductEditor";
+import ProviderContracts from "./pages/provider/ProviderContracts";
+import ProviderRemittances from "./pages/provider/ProviderRemittances";
+import ProviderAnalytics from "./pages/provider/ProviderAnalytics";
+import ProviderSettings from "./pages/provider/ProviderSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -92,6 +99,16 @@ const App = () => (
             <Route path="/brochure/compare" element={<ComparePlans />} />
             <Route path="/brochure/tire-rim" element={<TireRimPage />} />
             <Route path="/brochure/:planSlug" element={<PlanDetail />} />
+            {/* Provider */}
+            <Route path="/provider" element={<ProtectedRoute allowedRoles={["provider"]}><ProviderOverview /></ProtectedRoute>} />
+            <Route path="/provider/products" element={<ProtectedRoute allowedRoles={["provider"]}><ProviderProducts /></ProtectedRoute>} />
+            <Route path="/provider/products/new" element={<ProtectedRoute allowedRoles={["provider"]}><ProviderProductEditor /></ProtectedRoute>} />
+            <Route path="/provider/products/:id" element={<ProtectedRoute allowedRoles={["provider"]}><ProviderProductEditor /></ProtectedRoute>} />
+            <Route path="/provider/contracts" element={<ProtectedRoute allowedRoles={["provider"]}><ProviderContracts /></ProtectedRoute>} />
+            <Route path="/provider/remittances" element={<ProtectedRoute allowedRoles={["provider"]}><ProviderRemittances /></ProtectedRoute>} />
+            <Route path="/provider/analytics" element={<ProtectedRoute allowedRoles={["provider"]}><ProviderAnalytics /></ProtectedRoute>} />
+            <Route path="/provider/settings" element={<ProtectedRoute allowedRoles={["provider"]}><ProviderSettings /></ProtectedRoute>} />
+
             <Route path="/purchase" element={<PurchaseWizard />} />
 
             <Route path="*" element={<NotFound />} />
