@@ -33,6 +33,13 @@ import PlanDetail from "./pages/brochure/PlanDetail";
 import ComparePlans from "./pages/brochure/ComparePlans";
 import TireRimPage from "./pages/brochure/TireRimPage";
 import PurchaseWizard from "./pages/purchase/PurchaseWizard";
+import ProviderOverview from "./pages/provider/ProviderOverview";
+import ProviderProducts from "./pages/provider/ProviderProducts";
+import ProviderProductEditor from "./pages/provider/ProviderProductEditor";
+import ProviderContracts from "./pages/provider/ProviderContracts";
+import ProviderRemittances from "./pages/provider/ProviderRemittances";
+import ProviderAnalytics from "./pages/provider/ProviderAnalytics";
+import ProviderSettings from "./pages/provider/ProviderSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
