@@ -3,8 +3,9 @@ import DashboardLayout, { dealershipNavItems } from "@/components/dashboard/Dash
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
 import { useDealership } from "@/hooks/useDealership";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import {
   FileText, Package, Users, DollarSign, TrendingUp, Plus, Search, BarChart3,
@@ -12,27 +13,54 @@ import {
 import {
   ChartContainer, ChartTooltip, ChartTooltipContent,
 } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis } from "recharts";
+
+const demoChartData = [
+  { month: "Jan '25", contracts: 8 },
+  { month: "Feb '25", contracts: 12 },
+  { month: "Mar '25", contracts: 15 },
+  { month: "Apr '25", contracts: 10 },
+  { month: "May '25", contracts: 18 },
+  { month: "Jun '25", contracts: 22 },
+];
+
+const demoTopProducts = [
+  { name: "Gold VSC — Vehicle Service Contract", count: 22 },
+  { name: "Silver VSC — Vehicle Service Contract", count: 18 },
+  { name: "Tire & Rim Protection — Standard", count: 14 },
+  { name: "Platinum VSC — Vehicle Service Contract", count: 9 },
+  { name: "Bronze VSC — Vehicle Service Contract", count: 6 },
+];
+
+const demoStats = {
+  total: 85, active: 42, draft: 12, submitted: 8,
+  revenue: 127500, pendingRemittances: 5, avgPerContract: 1500,
+};
 
 const DealershipOverview = () => {
   const { dealershipId, loading: dLoading } = useDealership();
-  const [stats, setStats] = useState({
-    total: 0, active: 0, draft: 0, submitted: 0,
-    revenue: 0, pendingRemittances: 0, avgPerContract: 0,
-  });
-  const [chartData, setChartData] = useState<{ month: string; contracts: number }[]>([]);
-  const [topProducts, setTopProducts] = useState<{ name: string; count: number }[]>([]);
+  const { user } = useAuth();
+  const [stats, setStats] = useState(demoStats);
+  const [chartData, setChartData] = useState(demoChartData);
+  const [topProducts, setTopProducts] = useState(demoTopProducts);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!dealershipId) return;
+
+    // If no real user, use demo data
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       const { data: contracts } = await supabase
         .from("contracts")
         .select("id, status, contract_price, dealer_cost, created_at, product_id")
         .eq("dealership_id", dealershipId);
 
-      if (contracts) {
+      if (contracts && contracts.length > 0) {
         const total = contracts.length;
         const active = contracts.filter((c) => c.status === "active").length;
         const draft = contracts.filter((c) => c.status === "draft").length;
@@ -42,7 +70,6 @@ const DealershipOverview = () => {
 
         setStats({ total, active, draft, submitted, revenue, pendingRemittances: 0, avgPerContract });
 
-        // Chart: last 6 months
         const months: Record<string, number> = {};
         const now = new Date();
         for (let i = 5; i >= 0; i--) {
@@ -57,34 +84,19 @@ const DealershipOverview = () => {
         });
         setChartData(Object.entries(months).map(([month, contracts]) => ({ month, contracts })));
 
-        // Top products
         const prodCount: Record<string, number> = {};
-        contracts.forEach((c) => {
-          prodCount[c.product_id] = (prodCount[c.product_id] || 0) + 1;
-        });
-        const { data: products } = await supabase
-          .from("products")
-          .select("id, name")
-          .in("id", Object.keys(prodCount));
-        const tp = (products || [])
-          .map((p) => ({ name: p.name, count: prodCount[p.id] || 0 }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 5);
-        setTopProducts(tp);
+        contracts.forEach((c) => { prodCount[c.product_id] = (prodCount[c.product_id] || 0) + 1; });
+        const { data: products } = await supabase.from("products").select("id, name").in("id", Object.keys(prodCount));
+        const tp = (products || []).map((p) => ({ name: p.name, count: prodCount[p.id] || 0 })).sort((a, b) => b.count - a.count).slice(0, 5);
+        if (tp.length > 0) setTopProducts(tp);
       }
 
-      // Pending remittances
-      const { data: rems } = await supabase
-        .from("remittances")
-        .select("id, status, contract_id")
-        .eq("status", "pending");
-      // Filter by dealership contracts
-      setStats((prev) => ({ ...prev, pendingRemittances: rems?.length || 0 }));
-
+      const { data: rems } = await supabase.from("remittances").select("id, status, contract_id").eq("status", "pending");
+      setStats((prev) => ({ ...prev, pendingRemittances: rems?.length || prev.pendingRemittances }));
       setLoading(false);
     };
     fetchData();
-  }, [dealershipId]);
+  }, [dealershipId, user]);
 
   if (dLoading || loading) {
     return (
@@ -117,7 +129,6 @@ const DealershipOverview = () => {
   return (
     <DashboardLayout navItems={dealershipNavItems} title="Dashboard">
       <div className="space-y-6">
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
           {statCards.map((s) => (
             <Card key={s.label}>
@@ -133,7 +144,6 @@ const DealershipOverview = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Chart */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="text-base">Sales Trend (Last 6 Months)</CardTitle>
@@ -150,7 +160,6 @@ const DealershipOverview = () => {
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Quick Actions</CardTitle>
@@ -168,7 +177,6 @@ const DealershipOverview = () => {
           </Card>
         </div>
 
-        {/* Top Products */}
         {topProducts.length > 0 && (
           <Card>
             <CardHeader>

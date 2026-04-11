@@ -1,13 +1,14 @@
 import { useEffect, useState, useMemo } from "react";
 import DashboardLayout, { dealershipNavItems } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useDealership } from "@/hooks/useDealership";
+import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
 import { format } from "date-fns";
@@ -37,8 +38,24 @@ const statusColors: Record<string, string> = {
 
 const TABS = ["all", "draft", "submitted", "active", "expired", "cancelled"];
 
+const demoContracts: Contract[] = [
+  { id: "d1", customer_first_name: "John", customer_last_name: "Smith", vehicle_vin: "1HGBH41JXMN109186", vehicle_year: 2022, vehicle_make: "Honda", vehicle_model: "Civic", status: "active", contract_price: 1895, dealer_cost: 1200, created_at: "2025-06-01T10:00:00Z", product_id: "p1" },
+  { id: "d2", customer_first_name: "Sarah", customer_last_name: "Johnson", vehicle_vin: "5YJSA1DG9DFP14705", vehicle_year: 2023, vehicle_make: "Toyota", vehicle_model: "Camry", status: "active", contract_price: 2295, dealer_cost: 1500, created_at: "2025-05-15T14:00:00Z", product_id: "p2" },
+  { id: "d3", customer_first_name: "Mike", customer_last_name: "Davis", vehicle_vin: "WBAPH5C55BA271838", vehicle_year: 2021, vehicle_make: "BMW", vehicle_model: "328i", status: "submitted", contract_price: 2795, dealer_cost: 1800, created_at: "2025-06-05T09:00:00Z", product_id: "p3" },
+  { id: "d4", customer_first_name: "Emily", customer_last_name: "Wilson", vehicle_vin: "1G1YY22G955104367", vehicle_year: 2024, vehicle_make: "Chevrolet", vehicle_model: "Malibu", status: "draft", contract_price: 1695, dealer_cost: 1100, created_at: "2025-06-08T16:00:00Z", product_id: "p1" },
+  { id: "d5", customer_first_name: "James", customer_last_name: "Brown", vehicle_vin: "JN1TANT31Z0000001", vehicle_year: 2020, vehicle_make: "Nissan", vehicle_model: "Altima", status: "expired", contract_price: 1495, dealer_cost: 950, created_at: "2024-01-10T11:00:00Z", product_id: "p2" },
+  { id: "d6", customer_first_name: "Lisa", customer_last_name: "Taylor", vehicle_vin: "3FA6P0HD5LR123456", vehicle_year: 2023, vehicle_make: "Ford", vehicle_model: "Fusion", status: "active", contract_price: 1995, dealer_cost: 1300, created_at: "2025-04-20T08:00:00Z", product_id: "p3" },
+];
+
+const demoProducts: Record<string, string> = {
+  p1: "Gold VSC — Vehicle Service Contract",
+  p2: "Silver VSC — Vehicle Service Contract",
+  p3: "Platinum VSC — Vehicle Service Contract",
+};
+
 const DealershipContracts = () => {
   const { dealershipId, loading: dLoading } = useDealership();
+  const { user } = useAuth();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [products, setProducts] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
@@ -47,25 +64,40 @@ const DealershipContracts = () => {
 
   useEffect(() => {
     if (!dealershipId) return;
+
+    // Demo mode
+    if (!user) {
+      setContracts(demoContracts);
+      setProducts(demoProducts);
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       const { data } = await supabase
         .from("contracts")
         .select("*")
         .eq("dealership_id", dealershipId)
         .order("created_at", { ascending: false });
-      setContracts((data as Contract[]) || []);
 
-      const productIds = [...new Set((data || []).map((c: Contract) => c.product_id))];
-      if (productIds.length) {
-        const { data: prods } = await supabase.from("products").select("id, name").in("id", productIds);
-        const map: Record<string, string> = {};
-        (prods || []).forEach((p) => { map[p.id] = p.name; });
-        setProducts(map);
+      const contractData = (data as Contract[]) || [];
+      if (contractData.length === 0) {
+        setContracts(demoContracts);
+        setProducts(demoProducts);
+      } else {
+        setContracts(contractData);
+        const productIds = [...new Set(contractData.map((c) => c.product_id))];
+        if (productIds.length) {
+          const { data: prods } = await supabase.from("products").select("id, name").in("id", productIds);
+          const map: Record<string, string> = {};
+          (prods || []).forEach((p) => { map[p.id] = p.name; });
+          setProducts(map);
+        }
       }
       setLoading(false);
     };
     fetchData();
-  }, [dealershipId]);
+  }, [dealershipId, user]);
 
   const filtered = useMemo(() => {
     let list = contracts;
@@ -84,6 +116,10 @@ const DealershipContracts = () => {
   }, [contracts, tab, search, products]);
 
   const handleStatusChange = async (id: string, newStatus: string) => {
+    if (!user) {
+      setContracts((prev) => prev.map((c) => (c.id === id ? { ...c, status: newStatus } : c)));
+      return;
+    }
     await supabase.from("contracts").update({ status: newStatus }).eq("id", id);
     setContracts((prev) => prev.map((c) => (c.id === id ? { ...c, status: newStatus } : c)));
   };
