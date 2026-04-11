@@ -26,6 +26,7 @@ interface TeamMember {
 
 const TeamManagement = () => {
   const { dealershipId, memberRole, loading: dLoading } = useDealership();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,8 +36,21 @@ const TeamManagement = () => {
 
   const isAdmin = memberRole === "admin";
 
+  const demoMembers: TeamMember[] = [
+    { id: "m1", user_id: "u1", role: "admin", created_at: "2025-01-15T10:00:00Z", profile: { full_name: "Alex Manager", phone: "416-555-0100", avatar_url: null }, email: "alex@demodealership.com" },
+    { id: "m2", user_id: "u2", role: "employee", created_at: "2025-02-20T10:00:00Z", profile: { full_name: "Jordan Sales", phone: "416-555-0101", avatar_url: null }, email: "jordan@demodealership.com" },
+    { id: "m3", user_id: "u3", role: "employee", created_at: "2025-03-10T10:00:00Z", profile: { full_name: "Sam Finance", phone: "416-555-0102", avatar_url: null }, email: "sam@demodealership.com" },
+  ];
+
   useEffect(() => {
     if (!dealershipId) return;
+
+    if (!user) {
+      setMembers(demoMembers);
+      setLoading(false);
+      return;
+    }
+
     const fetchMembers = async () => {
       const { data } = await supabase
         .from("dealership_members")
@@ -44,7 +58,7 @@ const TeamManagement = () => {
         .eq("dealership_id", dealershipId)
         .order("created_at");
 
-      if (data) {
+      if (data && data.length > 0) {
         const userIds = data.map((m) => m.user_id);
         const { data: profiles } = await supabase
           .from("profiles")
@@ -59,11 +73,13 @@ const TeamManagement = () => {
           profile: profileMap[m.user_id] || { full_name: "Unknown", phone: null, avatar_url: null },
         }));
         setMembers(enriched);
+      } else {
+        setMembers(demoMembers);
       }
       setLoading(false);
     };
     fetchMembers();
-  }, [dealershipId]);
+  }, [dealershipId, user]);
 
   const handleAddMember = async () => {
     if (!dealershipId || !newMember.email) return;
