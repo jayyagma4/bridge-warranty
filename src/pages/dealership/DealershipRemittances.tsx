@@ -3,12 +3,12 @@ import DashboardLayout, { dealershipNavItems } from "@/components/dashboard/Dash
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useDealership } from "@/hooks/useDealership";
+import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { DollarSign, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -44,75 +44,88 @@ const statusColors: Record<string, string> = {
 
 const TABS = ["all", "pending", "submitted", "approved", "paid"];
 
+const demoSoldContracts: SoldContract[] = [
+  { id: "sc1", customer_first_name: "John", customer_last_name: "Smith", contract_price: 1895, dealer_cost: 1200, product_id: "p1", provider_id: "pr1", created_at: "2025-06-01T10:00:00Z" },
+  { id: "sc2", customer_first_name: "Sarah", customer_last_name: "Johnson", contract_price: 2295, dealer_cost: 1500, product_id: "p2", provider_id: "pr1", created_at: "2025-05-15T14:00:00Z" },
+  { id: "sc3", customer_first_name: "Lisa", customer_last_name: "Taylor", contract_price: 1995, dealer_cost: 1300, product_id: "p3", provider_id: "pr1", created_at: "2025-04-20T08:00:00Z" },
+];
+
+const demoRemittances: Remittance[] = [
+  { id: "r1", amount: 3500, status: "paid", due_date: "2025-04-15", paid_date: "2025-04-14", created_at: "2025-04-01T10:00:00Z", contract_id: "sc1" },
+  { id: "r2", amount: 2800, status: "approved", due_date: "2025-05-15", paid_date: null, created_at: "2025-05-01T10:00:00Z", contract_id: "sc2" },
+  { id: "r3", amount: 1500, status: "pending", due_date: "2025-06-15", paid_date: null, created_at: "2025-06-01T10:00:00Z", contract_id: "sc3" },
+];
+
 const DealershipRemittances = () => {
   const { dealershipId, loading: dLoading } = useDealership();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [soldContracts, setSoldContracts] = useState<SoldContract[]>([]);
   const [remittances, setRemittances] = useState<Remittance[]>([]);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<string[]>([]);
   const [tab, setTab] = useState("all");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!dealershipId) return;
+
+    if (!user) {
+      setSoldContracts(demoSoldContracts);
+      setRemittances(demoRemittances);
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
-      // Sold contracts not yet remitted
+      // Contracts ready for remittance (active, not yet remitted)
       const { data: contracts } = await supabase
         .from("contracts")
         .select("id, customer_first_name, customer_last_name, contract_price, dealer_cost, product_id, provider_id, created_at")
         .eq("dealership_id", dealershipId)
-        .eq("status", "submitted");
+        .eq("status", "active");
 
-      // Existing remittances
-      const { data: allContracts } = await supabase
-        .from("contracts")
-        .select("id")
-        .eq("dealership_id", dealershipId);
-      const contractIds = (allContracts || []).map((c) => c.id);
+      const { data: rems } = await supabase
+        .from("remittances")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      let rems: Remittance[] = [];
-      if (contractIds.length) {
-        const { data } = await supabase
-          .from("remittances")
-          .select("*")
-          .in("contract_id", contractIds)
-          .order("created_at", { ascending: false });
-        rems = (data as Remittance[]) || [];
-      }
-
-      const remittedContractIds = new Set(rems.map((r) => r.contract_id));
+      const remittedContractIds = new Set((rems || []).map((r) => r.contract_id));
       const unremitted = (contracts || []).filter((c) => !remittedContractIds.has(c.id));
 
-      setSoldContracts(unremitted as SoldContract[]);
-      setRemittances(rems);
+      setSoldContracts(unremitted.length > 0 ? unremitted : demoSoldContracts);
+      setRemittances(rems && rems.length > 0 ? rems : demoRemittances);
       setLoading(false);
     };
     fetchData();
-  }, [dealershipId]);
+  }, [dealershipId, user]);
 
   const toggleSelect = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+    setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]);
   };
 
   const selectedTotal = useMemo(
-    () => soldContracts.filter((c) => selected.has(c.id)).reduce((s, c) => s + (Number(c.dealer_cost) || 0), 0),
+    () => soldContracts.filter((c) => selected.includes(c.id)).reduce((s, c) => s + (Number(c.dealer_cost) || 0), 0),
     [selected, soldContracts]
   );
 
-  const handleSubmitRemittance = async () => {
-    if (selected.size === 0) return;
-    const selectedContracts = soldContracts.filter((c) => selected.has(c.id));
-    const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + 30);
+  const filteredRemittances = useMemo(() => {
+    if (tab === "all") return remittances;
+    return remittances.filter((r) => r.status === tab);
+  }, [remittances, tab]);
 
+  const handleSubmitRemittance = async () => {
+    if (!user) {
+      toast({ title: "Demo Mode", description: "Remittance submitted (demo)" });
+      setSoldContracts((prev) => prev.filter((c) => !selected.includes(c.id)));
+      setSelected([]);
+      return;
+    }
+
+    const selectedContracts = soldContracts.filter((c) => selected.includes(c.id));
     const inserts = selectedContracts.map((c) => ({
       contract_id: c.id,
       amount: Number(c.dealer_cost) || 0,
-      due_date: dueDate.toISOString().split("T")[0],
+      due_date: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
       status: "pending",
     }));
 
@@ -120,20 +133,21 @@ const DealershipRemittances = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Remittance Created", description: `${selected.size} contract(s) submitted for remittance.` });
-      // Update contract status to active
-      await supabase.from("contracts").update({ status: "active" }).in("id", Array.from(selected));
-      setSoldContracts((prev) => prev.filter((c) => !selected.has(c.id)));
-      setSelected(new Set());
+      toast({ title: "Submitted", description: `${selected.length} remittance(s) submitted.` });
+      setSoldContracts((prev) => prev.filter((c) => !selected.includes(c.id)));
+      setSelected([]);
     }
   };
 
-  const filteredRems = useMemo(() => {
-    if (tab === "all") return remittances;
-    return remittances.filter((r) => r.status === tab);
-  }, [remittances, tab]);
-
-  if (dLoading) return <DashboardLayout navItems={dealershipNavItems} title="Remittances"><div className="flex items-center justify-center h-64"><div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" /></div></DashboardLayout>;
+  if (dLoading || loading) {
+    return (
+      <DashboardLayout navItems={dealershipNavItems} title="Remittances">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout navItems={dealershipNavItems} title="Remittances">
@@ -141,51 +155,44 @@ const DealershipRemittances = () => {
         {/* Ready to Remit */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <DollarSign className="w-5 h-5" /> Ready to Remit ({soldContracts.length})
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Ready to Remit</CardTitle>
+              {selected.length > 0 && (
+                <Button size="sm" onClick={handleSubmitRemittance}>
+                  <Send className="w-4 h-4 mr-1" />
+                  Submit {selected.length} — ${selectedTotal.toLocaleString()}
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="flex justify-center py-8"><div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" /></div>
-            ) : soldContracts.length === 0 ? (
-              <p className="text-muted-foreground text-center py-6">No sold contracts ready for remittance.</p>
+            {soldContracts.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No contracts ready for remittance.</p>
             ) : (
-              <>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-10"></TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Contract Price</TableHead>
-                      <TableHead>Dealer Cost</TableHead>
-                      <TableHead>Date Sold</TableHead>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10" />
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Contract Price</TableHead>
+                    <TableHead>Dealer Cost</TableHead>
+                    <TableHead>Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {soldContracts.map((c) => (
+                    <TableRow key={c.id}>
+                      <TableCell>
+                        <Checkbox checked={selected.includes(c.id)} onCheckedChange={() => toggleSelect(c.id)} />
+                      </TableCell>
+                      <TableCell className="font-medium">{c.customer_first_name} {c.customer_last_name}</TableCell>
+                      <TableCell>${Number(c.contract_price || 0).toLocaleString()}</TableCell>
+                      <TableCell>${Number(c.dealer_cost || 0).toLocaleString()}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{format(new Date(c.created_at), "MMM d, yyyy")}</TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {soldContracts.map((c) => (
-                      <TableRow key={c.id}>
-                        <TableCell>
-                          <Checkbox checked={selected.has(c.id)} onCheckedChange={() => toggleSelect(c.id)} />
-                        </TableCell>
-                        <TableCell className="font-medium">{c.customer_first_name} {c.customer_last_name}</TableCell>
-                        <TableCell>${Number(c.contract_price || 0).toLocaleString()}</TableCell>
-                        <TableCell>${Number(c.dealer_cost || 0).toLocaleString()}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{format(new Date(c.created_at), "MMM d, yyyy")}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                  <div>
-                    <span className="text-sm text-muted-foreground">{selected.size} selected</span>
-                    <span className="text-sm font-medium ml-4">Total: ${selectedTotal.toLocaleString()}</span>
-                  </div>
-                  <Button onClick={handleSubmitRemittance} disabled={selected.size === 0}>
-                    <Send className="w-4 h-4 mr-1" /> Submit Remittance
-                  </Button>
-                </div>
-              </>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>
@@ -194,16 +201,18 @@ const DealershipRemittances = () => {
         <Card>
           <Tabs value={tab} onValueChange={setTab}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base mb-2">Remittance History</CardTitle>
-              <TabsList>
-                {TABS.map((t) => (
-                  <TabsTrigger key={t} value={t} className="capitalize">{t}</TabsTrigger>
-                ))}
-              </TabsList>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Remittance History</CardTitle>
+                <TabsList>
+                  {TABS.map((t) => (
+                    <TabsTrigger key={t} value={t} className="capitalize">{t}</TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
             </CardHeader>
             <CardContent>
-              {filteredRems.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No remittances found.</p>
+              {filteredRemittances.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No remittances found.</p>
               ) : (
                 <Table>
                   <TableHeader>
@@ -216,10 +225,12 @@ const DealershipRemittances = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredRems.map((r) => (
+                    {filteredRemittances.map((r) => (
                       <TableRow key={r.id}>
                         <TableCell className="font-medium">${r.amount.toLocaleString()}</TableCell>
-                        <TableCell><Badge className={statusColors[r.status] || ""} variant="secondary">{r.status}</Badge></TableCell>
+                        <TableCell>
+                          <Badge className={statusColors[r.status] || ""} variant="secondary">{r.status}</Badge>
+                        </TableCell>
                         <TableCell className="text-sm">{format(new Date(r.due_date), "MMM d, yyyy")}</TableCell>
                         <TableCell className="text-sm">{r.paid_date ? format(new Date(r.paid_date), "MMM d, yyyy") : "—"}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{format(new Date(r.created_at), "MMM d, yyyy")}</TableCell>
