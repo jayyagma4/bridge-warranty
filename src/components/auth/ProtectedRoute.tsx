@@ -51,7 +51,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     );
   }
 
-  if (!user) return null;
+  if (!DEV_BYPASS && !user) return null;
 
   return <>{children}</>;
 };
