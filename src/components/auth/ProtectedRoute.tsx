@@ -7,12 +7,14 @@ interface ProtectedRouteProps {
   allowedRoles?: string[];
 }
 
+const DEV_BYPASS = true; // Set to false to require login
+
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const { user, roles, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!DEV_BYPASS && !loading && !user) {
       navigate("/sign-in");
     }
   }, [loading, user, navigate]);
@@ -49,7 +51,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     );
   }
 
-  if (!user) return null;
+  if (!DEV_BYPASS && !user) return null;
 
   return <>{children}</>;
 };

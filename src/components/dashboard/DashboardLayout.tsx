@@ -158,12 +158,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, navItems, t
             <div className="flex items-center gap-3 mb-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <span className="text-xs font-bold text-primary">
-                  {user?.email?.charAt(0).toUpperCase()}
+                  {user?.email?.charAt(0).toUpperCase() || "D"}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{user?.email}</p>
-                <p className="text-xs text-muted-foreground capitalize">{primaryRole.replace(/_/g, " ")}</p>
+                <p className="text-sm font-medium text-foreground truncate">{user?.email || "Dev Preview"}</p>
+                <p className="text-xs text-muted-foreground capitalize">{primaryRole.replace(/_/g, " ") || "dealership admin"}</p>
               </div>
             </div>
             <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={handleSignOut}>
