@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
+const DEV_MODE = true; // Set to false for production
+
 export const useDealership = () => {
   const { user } = useAuth();
   const [dealershipId, setDealershipId] = useState<string | null>(null);
@@ -10,7 +12,20 @@ export const useDealership = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    // If no user and dev mode, return mock dealership
+    if (!user && DEV_MODE) {
+      setDealershipId("demo-dealership-id");
+      setDealershipName("Demo Dealership");
+      setMemberRole("admin");
+      setLoading(false);
+      return;
+    }
+
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     const fetch = async () => {
       const { data } = await supabase
         .from("dealership_members")
