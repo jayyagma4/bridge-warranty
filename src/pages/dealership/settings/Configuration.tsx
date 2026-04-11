@@ -44,6 +44,7 @@ const fmt = (v: number) => `$${v.toLocaleString("en-CA", { minimumFractionDigits
 
 const Configuration = () => {
   const { dealershipId, memberRole, loading: dLoading } = useDealership();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [providers, setProviders] = useState<Record<string, string>>({});
