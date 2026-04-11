@@ -20,10 +20,9 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   }, [loading, user, navigate]);
 
   useEffect(() => {
-    if (!loading && user && allowedRoles && allowedRoles.length > 0) {
+    if (!DEV_BYPASS && !loading && user && allowedRoles && allowedRoles.length > 0) {
       const hasAllowedRole = roles.some((r) => allowedRoles.includes(r.role));
       if (!hasAllowedRole && roles.length > 0) {
-        // Redirect to the correct dashboard based on actual role
         const primaryRole = roles[0]?.role;
         switch (primaryRole) {
           case "super_admin":
