@@ -60,25 +60,60 @@ const Configuration = () => {
 
   const isAdmin = memberRole === "admin";
 
+  const demoProducts: Product[] = [
+    { id: "dp1", name: "Gold VSC — Vehicle Service Contract", type: "warranty", provider_id: "pv1", pricing: { deductible: 200, tiers: [
+      { term: "12 months", dealer_cost: 895, suggested_retail: 1295, mileage_bracket: "0-80,000 km", vehicle_class: "Class 1" },
+      { term: "24 months", dealer_cost: 1195, suggested_retail: 1695, mileage_bracket: "0-80,000 km", vehicle_class: "Class 1" },
+      { term: "36 months", dealer_cost: 1495, suggested_retail: 2095, mileage_bracket: "0-80,000 km", vehicle_class: "Class 1" },
+      { term: "12 months", dealer_cost: 995, suggested_retail: 1395, mileage_bracket: "80,001-160,000 km", vehicle_class: "Class 2" },
+      { term: "24 months", dealer_cost: 1395, suggested_retail: 1895, mileage_bracket: "80,001-160,000 km", vehicle_class: "Class 2" },
+    ] } },
+    { id: "dp2", name: "Silver VSC — Vehicle Service Contract", type: "warranty", provider_id: "pv1", pricing: { deductible: 100, tiers: [
+      { term: "12 months", dealer_cost: 695, suggested_retail: 995, mileage_bracket: "0-80,000 km", vehicle_class: "Class 1" },
+      { term: "24 months", dealer_cost: 895, suggested_retail: 1295, mileage_bracket: "0-80,000 km", vehicle_class: "Class 1" },
+    ] } },
+    { id: "dp3", name: "Tire & Rim Protection — Standard", type: "tire_rim", provider_id: "pv2", pricing: { per_claim: 500, tiers: [
+      { term: "12 months", dealer_cost: 295, suggested_retail: 495, vehicle_class: "Passenger" },
+      { term: "24 months", dealer_cost: 495, suggested_retail: 795, vehicle_class: "Passenger" },
+    ] } },
+  ];
+
   useEffect(() => {
     if (!dealershipId) return;
+
+    if (!user) {
+      setProducts(demoProducts);
+      setProviders({ pv1: "National Warranty Co.", pv2: "Shield Protection Inc." });
+      setSelectedProduct(demoProducts[0].id);
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       const { data: prods } = await supabase
         .from("products")
         .select("id, name, type, pricing, provider_id")
         .eq("status", "active");
       const prodList = (prods as Product[]) || [];
-      setProducts(prodList);
+      if (prodList.length === 0) {
+        setProducts(demoProducts);
+        setProviders({ pv1: "National Warranty Co.", pv2: "Shield Protection Inc." });
+        setSelectedProduct(demoProducts[0].id);
+      } else {
+        setProducts(prodList);
 
-      const providerIds = [...new Set(prodList.map((p) => p.provider_id))];
-      if (providerIds.length) {
-        const { data: provs } = await supabase
-          .from("providers")
-          .select("id, company_name")
-          .in("id", providerIds);
-        const map: Record<string, string> = {};
-        (provs || []).forEach((p) => { map[p.id] = p.company_name; });
-        setProviders(map);
+        const providerIds = [...new Set(prodList.map((p) => p.provider_id))];
+        if (providerIds.length) {
+          const { data: provs } = await supabase
+            .from("providers")
+            .select("id, company_name")
+            .in("id", providerIds);
+          const map: Record<string, string> = {};
+          (provs || []).forEach((p) => { map[p.id] = p.company_name; });
+          setProviders(map);
+        }
+
+        if (prodList.length > 0) setSelectedProduct(prodList[0].id);
       }
 
       const { data: configs } = await supabase
@@ -93,11 +128,10 @@ const Configuration = () => {
       });
       setPricingConfigs(configMap);
 
-      if (prodList.length > 0) setSelectedProduct(prodList[0].id);
       setLoading(false);
     };
     fetchData();
-  }, [dealershipId]);
+  }, [dealershipId, user]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
