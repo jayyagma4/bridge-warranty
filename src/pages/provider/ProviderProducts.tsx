@@ -205,14 +205,30 @@ const ProviderProducts = () => {
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 text-center mb-4">
+                    <div className="grid grid-cols-4 gap-2 text-center mb-4">
                       <div className="bg-muted/50 rounded-lg p-2">
                         <p className="text-lg font-bold">{tierCount(product)}</p>
-                        <p className="text-[10px] text-muted-foreground">Tiers</p>
+                        <p className="text-[10px] text-muted-foreground">Pricing Tiers</p>
                       </div>
                       <div className="bg-muted/50 rounded-lg p-2">
                         <p className="text-[11px] font-medium">{(cd?.includedCoverage || cd?.includes || []).length}</p>
                         <p className="text-[10px] text-muted-foreground">Coverage</p>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-2">
+                        {(() => {
+                          const sp = getStartingPrice(product);
+                          return sp > 0 ? (
+                            <>
+                              <p className="text-[11px] font-bold text-primary">${sp.toLocaleString()}</p>
+                              <p className="text-[10px] text-muted-foreground">Starting From</p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-[11px] font-medium">—</p>
+                              <p className="text-[10px] text-muted-foreground">Price</p>
+                            </>
+                          );
+                        })()}
                       </div>
                       <div className="bg-muted/50 rounded-lg p-2">
                         <p className="text-[11px] font-medium">{new Date(product.updated_at).toLocaleDateString()}</p>
