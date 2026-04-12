@@ -91,6 +91,31 @@ const ProviderProducts = () => {
     return pr?.pricingTiers?.length || 0;
   };
 
+  const getStartingPrice = (p: DBProduct): number => {
+    const pr = p.pricing as any;
+    const tiers = pr?.pricingTiers || [];
+    let min = Infinity;
+    for (const pt of tiers) {
+      const baseRow = (pt.rows || []).find((r: any) => r.label === "Base Price");
+      if (baseRow?.values) {
+        for (const v of baseRow.values) {
+          const n = typeof v === "number" ? v : parseFloat(v);
+          if (!isNaN(n) && n > 0 && n < min) min = n;
+        }
+      }
+    }
+    return min === Infinity ? 0 : min;
+  };
+
+  const productDisplayName = (p: DBProduct): string => {
+    const cd = p.coverage_details as any;
+    if (cd?.group && cd?.tier) {
+      const groupLabel = cd.group.charAt(0).toUpperCase() + cd.group.slice(1);
+      return `${groupLabel} Plan — ${cd.tier}`;
+    }
+    return p.name;
+  };
+
   return (
     <DashboardLayout navItems={providerNavItems} title="Products">
       <div className="space-y-6">
