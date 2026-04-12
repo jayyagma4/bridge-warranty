@@ -26,20 +26,22 @@ const ProviderProducts = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      // Get provider membership
-      if (!user) return;
-      const { data: membership } = await supabase
-        .from("provider_members")
-        .select("provider_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      let providerId: string | undefined;
+      
+      // Try to get provider membership if user is logged in
+      if (user) {
+        const { data: membership } = await supabase
+          .from("provider_members")
+          .select("provider_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        providerId = membership?.provider_id || undefined;
+      }
 
-      const providerId = membership?.provider_id;
-      const data = await fetchProducts(providerId || undefined);
+      const data = await fetchProducts(providerId);
       setProducts(data);
     } catch (err) {
       console.error("Failed to load products:", err);
-      // Load all active products as fallback (demo mode)
       try {
         const data = await fetchProducts();
         setProducts(data);
