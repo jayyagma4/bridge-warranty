@@ -335,7 +335,4 @@ const FindProducts = () => {
   );
 };
 
-// Need to import PlanCard
-import PlanCard from "@/components/brochure/PlanCard";
-
 export default FindProducts;
