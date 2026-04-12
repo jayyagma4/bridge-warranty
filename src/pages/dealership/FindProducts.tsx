@@ -10,6 +10,7 @@ import {
   ChevronRight, Check, ShoppingCart, Loader2,
 } from "lucide-react";
 import { fetchProducts, dbToDisplayList, getGroupedDisplayProducts, getProductsByGroup, type DisplayProduct } from "@/lib/productService";
+import PlanCard from "@/components/brochure/PlanCard";
 
 interface VehicleInfo {
   year: number;
