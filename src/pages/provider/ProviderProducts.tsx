@@ -186,15 +186,18 @@ const ProviderProducts = () => {
             {filtered.map((product) => {
               const cd = product.coverage_details as any;
               const group = cd?.group;
-              return (
+               return (
                 <Card key={product.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-3">
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-base truncate">{product.name}</h3>
+                        <h3 className="font-semibold text-base truncate">{productDisplayName(product)}</h3>
                         <p className="text-xs text-muted-foreground">{TYPE_LABELS[product.type] || product.type}</p>
+                        {cd?.tier && (
+                          <Badge variant="outline" className="text-[10px] mt-1">Tier: {cd.tier}</Badge>
+                        )}
                         {group && (
-                          <Badge variant="outline" className="text-[10px] mt-1">{group}</Badge>
+                          <Badge variant="secondary" className="text-[10px] mt-1 ml-1">Group: {group}</Badge>
                         )}
                       </div>
                       <Badge variant={product.status === "active" ? "default" : "secondary"} className="capitalize ml-2">
