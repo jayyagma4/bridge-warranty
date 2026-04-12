@@ -14,6 +14,7 @@ const BrochureHeader = () => {
   }, []);
 
   const navLinks = [
+    { to: "/", label: "Home" },
     { to: "/brochure", label: "All Plans" },
     { to: "/brochure/compare", label: "Compare" },
     { to: "/brochure/tire-rim", label: "Tire & Rim" },
@@ -22,7 +23,7 @@ const BrochureHeader = () => {
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#0f1b3d]/95 backdrop-blur-md shadow-lg" : "bg-[#0f1b3d]"}`}>
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/brochure" className="flex items-center gap-2.5">
+        <Link to="/" className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center">
             <span className="text-[#0f1b3d] font-display font-bold text-sm">BW</span>
           </div>
