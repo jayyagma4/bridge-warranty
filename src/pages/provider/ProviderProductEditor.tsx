@@ -214,20 +214,22 @@ const ProviderProductEditor = () => {
   // Load provider membership + product data
   useEffect(() => {
     const load = async () => {
-      if (!user) return;
-      const { data: membership } = await supabase
-        .from("provider_members")
-        .select("provider_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (membership) setProviderId(membership.provider_id);
+      // Try to get provider membership if user is logged in
+      if (user) {
+        const { data: membership } = await supabase
+          .from("provider_members")
+          .select("provider_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (membership) setProviderId(membership.provider_id);
+      }
 
       if (!isNew && id) {
         try {
           const product = await fetchProductById(id);
           if (product) {
             setForm(dbProductToForm(product));
-            if (!membership) setProviderId(product.provider_id);
+            if (!providerId) setProviderId(product.provider_id);
           }
         } catch (err) {
           console.error("Failed to load product:", err);

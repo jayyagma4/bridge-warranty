@@ -91,6 +91,31 @@ const ProviderProducts = () => {
     return pr?.pricingTiers?.length || 0;
   };
 
+  const getStartingPrice = (p: DBProduct): number => {
+    const pr = p.pricing as any;
+    const tiers = pr?.pricingTiers || [];
+    let min = Infinity;
+    for (const pt of tiers) {
+      const baseRow = (pt.rows || []).find((r: any) => r.label === "Base Price");
+      if (baseRow?.values) {
+        for (const v of baseRow.values) {
+          const n = typeof v === "number" ? v : parseFloat(v);
+          if (!isNaN(n) && n > 0 && n < min) min = n;
+        }
+      }
+    }
+    return min === Infinity ? 0 : min;
+  };
+
+  const productDisplayName = (p: DBProduct): string => {
+    const cd = p.coverage_details as any;
+    if (cd?.group && cd?.tier) {
+      const groupLabel = cd.group.charAt(0).toUpperCase() + cd.group.slice(1);
+      return `${groupLabel} Plan — ${cd.tier}`;
+    }
+    return p.name;
+  };
+
   return (
     <DashboardLayout navItems={providerNavItems} title="Products">
       <div className="space-y-6">
@@ -161,15 +186,18 @@ const ProviderProducts = () => {
             {filtered.map((product) => {
               const cd = product.coverage_details as any;
               const group = cd?.group;
-              return (
+               return (
                 <Card key={product.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-3">
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-base truncate">{product.name}</h3>
+                        <h3 className="font-semibold text-base truncate">{productDisplayName(product)}</h3>
                         <p className="text-xs text-muted-foreground">{TYPE_LABELS[product.type] || product.type}</p>
+                        {cd?.tier && (
+                          <Badge variant="outline" className="text-[10px] mt-1">Tier: {cd.tier}</Badge>
+                        )}
                         {group && (
-                          <Badge variant="outline" className="text-[10px] mt-1">{group}</Badge>
+                          <Badge variant="secondary" className="text-[10px] mt-1 ml-1">Group: {group}</Badge>
                         )}
                       </div>
                       <Badge variant={product.status === "active" ? "default" : "secondary"} className="capitalize ml-2">
@@ -177,14 +205,30 @@ const ProviderProducts = () => {
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 text-center mb-4">
+                    <div className="grid grid-cols-4 gap-2 text-center mb-4">
                       <div className="bg-muted/50 rounded-lg p-2">
                         <p className="text-lg font-bold">{tierCount(product)}</p>
-                        <p className="text-[10px] text-muted-foreground">Tiers</p>
+                        <p className="text-[10px] text-muted-foreground">Pricing Tiers</p>
                       </div>
                       <div className="bg-muted/50 rounded-lg p-2">
                         <p className="text-[11px] font-medium">{(cd?.includedCoverage || cd?.includes || []).length}</p>
                         <p className="text-[10px] text-muted-foreground">Coverage</p>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-2">
+                        {(() => {
+                          const sp = getStartingPrice(product);
+                          return sp > 0 ? (
+                            <>
+                              <p className="text-[11px] font-bold text-primary">${sp.toLocaleString()}</p>
+                              <p className="text-[10px] text-muted-foreground">Starting From</p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-[11px] font-medium">—</p>
+                              <p className="text-[10px] text-muted-foreground">Price</p>
+                            </>
+                          );
+                        })()}
                       </div>
                       <div className="bg-muted/50 rounded-lg p-2">
                         <p className="text-[11px] font-medium">{new Date(product.updated_at).toLocaleDateString()}</p>
