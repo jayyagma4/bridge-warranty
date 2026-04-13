@@ -494,36 +494,112 @@ const ProviderProductEditor = () => {
           {/* Basic Info */}
           <TabsContent value="basic">
             <Card>
-              <CardHeader><CardTitle>Basic Information</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Product Name *</Label>
-                    <Input value={form.name} onChange={(e) => updateForm({ name: e.target.value })} placeholder="e.g., Gold Powertrain $1500" />
+              <CardHeader><CardTitle>Product Setup</CardTitle></CardHeader>
+              <CardContent className="space-y-6">
+                {/* Step 1: Product Type */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="outline" className="text-xs font-bold">Step 1</Badge>
+                    <Label className="text-sm font-semibold">Product Type</Label>
                   </div>
-                  <div>
-                    <Label>Product Type *</Label>
-                    <Select value={form.type} onValueChange={(v) => updateForm({ type: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(TYPE_LABELS).map(([val, label]) => (
-                          <SelectItem key={val} value={val}>{label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <Select value={form.type} onValueChange={(v) => updateForm({ type: v })}>
+                    <SelectTrigger className="max-w-md"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(TYPE_LABELS).map(([val, label]) => (
+                        <SelectItem key={val} value={val}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Step 2: Plan Name / Product Group */}
+                <div className="space-y-2 border-t pt-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="outline" className="text-xs font-bold">Step 2</Badge>
+                    <Label className="text-sm font-semibold">Plan Name / Product Group</Label>
                   </div>
-                  <div>
-                    <Label>Product Group / Family</Label>
-                    <Input value={form.group} onChange={(e) => updateForm({ group: e.target.value })} placeholder="e.g., Powertrain" />
+                  <p className="text-xs text-muted-foreground">
+                    Select an existing plan group to add a new tier, or create a new plan group.
+                  </p>
+                  {existingGroups.length > 0 && !newGroupMode ? (
+                    <div className="space-y-3">
+                      <Select
+                        value={form.group || "__new__"}
+                        onValueChange={(v) => {
+                          if (v === "__new__") {
+                            setNewGroupMode(true);
+                            updateForm({ group: "" });
+                          } else {
+                            updateForm({ group: v });
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="max-w-md"><SelectValue placeholder="Select a plan group..." /></SelectTrigger>
+                        <SelectContent>
+                          {existingGroups.map(({ group }) => (
+                            <SelectItem key={group} value={group}>
+                              {group.charAt(0).toUpperCase() + group.slice(1)}
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="__new__">+ Create New Plan Group</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={form.group}
+                        onChange={(e) => updateForm({ group: e.target.value })}
+                        placeholder="e.g., Powertrain, Essential, Diamond Plus"
+                        className="max-w-md"
+                      />
+                      {existingGroups.length > 0 && (
+                        <Button variant="ghost" size="sm" onClick={() => setNewGroupMode(false)}>
+                          Select Existing
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 3: Product Name / Tier */}
+                <div className="space-y-2 border-t pt-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="outline" className="text-xs font-bold">Step 3</Badge>
+                    <Label className="text-sm font-semibold">Product Name / Tier</Label>
                   </div>
-                  <div>
-                    <Label>Eligibility Label</Label>
-                    <Input value={form.eligibilityLabel} onChange={(e) => updateForm({ eligibilityLabel: e.target.value })} placeholder="e.g., Any Year, Make, Model or Mileage" />
+                  <p className="text-xs text-muted-foreground">
+                    The specific tier or product name within this plan group (e.g., Bronze, Silver, Gold, Platinum).
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs">Tier Name</Label>
+                      <Input value={form.tier} onChange={(e) => updateForm({ tier: e.target.value })} placeholder="e.g., Bronze, Silver, Gold" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Full Product Name</Label>
+                      <Input value={form.name} onChange={(e) => updateForm({ name: e.target.value })} placeholder="e.g., Powertrain Bronze" />
+                      <p className="text-xs text-muted-foreground mt-1">Used internally for identification</p>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <Label>Description</Label>
-                  <Textarea value={form.description} onChange={(e) => updateForm({ description: e.target.value })} placeholder="Describe what this product covers..." className="min-h-[100px]" />
+
+                {/* Additional Info */}
+                <div className="space-y-4 border-t pt-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="outline" className="text-xs font-bold">Step 4</Badge>
+                    <Label className="text-sm font-semibold">Additional Details</Label>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Eligibility Label</Label>
+                      <Input value={form.eligibilityLabel} onChange={(e) => updateForm({ eligibilityLabel: e.target.value })} placeholder="e.g., Any Year, Make, Model or Mileage" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Description</Label>
+                    <Textarea value={form.description} onChange={(e) => updateForm({ description: e.target.value })} placeholder="Describe what this product covers..." className="min-h-[100px]" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
