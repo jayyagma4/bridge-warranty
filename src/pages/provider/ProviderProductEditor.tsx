@@ -213,7 +213,8 @@ const ProviderProductEditor = () => {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!isNew);
   const [providerId, setProviderId] = useState<string | null>(null);
-
+  const [existingGroups, setExistingGroups] = useState<{ group: string; type: string }[]>([]);
+  const [newGroupMode, setNewGroupMode] = useState(false);
   // Load provider membership + product data
   useEffect(() => {
     const load = async () => {
