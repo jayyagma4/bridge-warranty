@@ -1,92 +1,70 @@
 
 
-## Plan: Build Dealership Dashboard Suite
+# Plan: Add Infinite Auto Care as Provider with PPF and Ceramic Coating Products
 
-### Context
-Your live site has a full dealership experience — dashboard with stats, contracts, remittances, team management, confidentiality pricing, settings, and reporting. The Lovable project has the database schema, auth, and nav items defined, but is missing most dealership pages. This plan builds them all.
+## Summary
 
-### What we're building
+Scrape data from infiniteautocare.ca has been completed. We will create **Infinite Auto Care** as a new provider and upload their **2 product groups** (Paint Protection Film with 5 packages, Ceramic Coating with 4 packages) into the marketplace.
 
-**1. Dealership Dashboard (Overview Page)** — `/dealership`
-- Stats cards: Contracts Created, Active, Draft, Revenue, Pending Payment, Submitted Batches, Avg Per Contract, Top Product
-- Sales Trend chart (last 6 months)
-- Quick Actions panel linking to Contracts, Find Products, Team, Remittances
-- Top Products and Top Performers sections
-- All data pulled from contracts/remittances tables filtered by dealership
+## Extracted Product Data
 
-**2. Contracts Page** — `/dealership/contracts`
-- Table of all contracts with status tabs (Draft, Sold, Active, Expired, Cancelled)
-- Search/filter by customer name, VIN, product
-- Create new contract button (links to purchase wizard)
-- Status badge styling, date formatting
-- Actions: View details, mark as sold, cancel
+### Provider: Infinite Auto Care
+- Location: Ottawa & Gatineau
+- Services: PPF (XPEL Authorized Dealer), Ceramic Coating (Feynlab Certified)
 
-**3. Remittances Page** — `/dealership/remittances`
-- "Create Remittance" section with Ready to Remit / All Sold toggle
-- Select sold contracts to batch, assign remittance number, provider total
-- Remittance History table with status tabs (Draft, Submitted, Approved, Rejected, Paid)
-- Search remittances
+### Product 1: Paint Protection Film (type: "PPF")
+**Plan Group: XPEL Paint Protection Film** — 5 tiers:
 
-**4. Team Management Page** — `/dealership/settings/team`
-- List team members with role badges (Admin/Employee), status (Active), join date
-- Add Member dialog (email, name, phone, role selection)
-- Edit member details, Disable/Enable member
-- Count indicators (Active, Admins)
+| Tier | Starting Price | Coverage |
+|------|---------------|----------|
+| High Impact Package | $399.99 | Partial Hood, Partial Fenders, Headlights |
+| Partial Front End Package | $899.99 | Front Bumper, Partial Hood, Partial Fenders, Headlights |
+| Full Front End Package | $1,699.00 | Full Front Bumper, Full Hood, Full Fenders, Headlights, Mirrors |
+| Full Vehicle PPF Package | $4,499.00 | Full Exterior Coverage (also available in Stealth PPF) |
+| Track Pack | $1,999.00 | Full Front Bumper, Full Hood, Full Fenders, Headlights, Mirrors, Rocker Panels, Lower Doors |
 
-**5. Confidentiality Pricing (Retail Pricing)** — `/dealership/settings/configuration`
-- Toggle switch: "Confidentiality Pricing" on/off
-- Product list filtered by provider
-- Select a product to configure retail markup pricing per term/tier
-- Two modes: Dealer Internal Cost vs Confidentiality (Retail) Pricing
-- Markup stored per dealership per product (new `dealership_product_pricing` table)
+Features: Self-healing technology, 10-year warranty, UV protection, stain resistance
 
-**6. Profile Page** — `/dealership/settings/profile`
-- Edit user profile: name, email, phone, password change
+### Product 2: Ceramic Coating (type: "Ceramic Coating")
+**Plan Group: Feynlab Ceramic Coating** — 4 tiers:
 
-**7. Settings with Sub-navigation**
-- Update dealership nav to include Settings as expandable group with Configuration, Team, Profile sub-items (matching your live sidebar screenshot)
+| Tier | Starting Price | Warranty |
+|------|---------------|----------|
+| FeynLab V3 | $899.99 | 3 Years |
+| FeynLab Ultra V2 | $999.99 | 5 Years |
+| FeynLab Self Heal Lite | Contact for Pricing | 5 Years |
+| FeynLab Self Heal Plus | Contact for Pricing | 7 Years |
 
-**8. Reporting Page** — `/dealership/reporting`
-- Sales by product, by month, by employee
-- Revenue trends, contract volume
+## Implementation Steps
 
-### Database changes needed
-- New table: `dealership_product_pricing` (dealership_id, product_id, retail_price jsonb, created_at, updated_at) with RLS
-- Add `reporting` nav item to dealership sidebar
+### Step 1: Create Provider Record
+- Insert "Infinite Auto Care" into the `providers` table with status "approved"
+- Create a migration or use the existing provider insertion pattern
 
-### Navigation update
-Update `dealershipNavItems` in DashboardLayout to match live site:
-- Dashboard, Find Products, Contracts, Remittances, Reporting
-- Settings (expandable): Configuration, Team, Profile
+### Step 2: Insert 9 Product Records
+Each product will be a row in the `products` table with:
+- `provider_id` pointing to Infinite Auto Care
+- `type`: "PPF" or "Ceramic Coating"  
+- `coverage_details` JSONB: `{ group, tier, slug, includedCoverage, coverageCategories }`
+- `pricing` JSONB: `{ pricingTiers, claimRange, deductible }`
+- `eligibility_rules` JSONB: eligibility info
+- `status`: "active"
 
-### Routes to add
-```text
-/dealership                      → Dashboard overview
-/dealership/contracts            → Contracts list
-/dealership/remittances          → Remittances
-/dealership/reporting            → Reporting
-/dealership/settings/configuration → Confidentiality Pricing
-/dealership/settings/team        → Team Management
-/dealership/settings/profile     → Profile
-```
+**PPF products** (5 rows) all share group "XPEL Paint Protection Film":
+- Each tier stores its coverage areas, starting price, and warranty details
 
-### Files to create/edit
-- **Create**: `src/pages/dealership/DealershipOverview.tsx`
-- **Create**: `src/pages/dealership/DealershipContracts.tsx`
-- **Create**: `src/pages/dealership/DealershipRemittances.tsx`
-- **Create**: `src/pages/dealership/DealershipReporting.tsx`
-- **Create**: `src/pages/dealership/settings/Configuration.tsx` (Confidentiality Pricing)
-- **Create**: `src/pages/dealership/settings/TeamManagement.tsx`
-- **Create**: `src/pages/dealership/settings/Profile.tsx`
-- **Edit**: `src/components/dashboard/DashboardLayout.tsx` — update nav with Settings sub-group
-- **Edit**: `src/App.tsx` — add all new routes with ProtectedRoute
-- **Migration**: `dealership_product_pricing` table for retail markup storage
+**Ceramic Coating products** (4 rows) all share group "Feynlab Ceramic Coating":
+- Each tier stores its features, warranty duration, and price
 
-### Implementation order
-1. Dashboard overview + routes + nav update
-2. Contracts page
-3. Remittances page
-4. Team management
-5. Confidentiality Pricing (configuration)
-6. Profile + Reporting
+### Step 3: Ensure Product Type Support
+- Add "PPF" and "Ceramic Coating" to `TYPE_LABELS` in `productService.ts` (PPF is already there, Ceramic Coating is already there)
+- No code changes needed for type support
+
+### Step 4: Verify Display
+- Products will automatically appear on Provider Products page, Dealer Find Products page, and brochure pages via existing `fetchProducts()` logic
+- The group/tier structure will render correctly using the existing `coverage_details.group` and `coverage_details.tier` fields
+
+## Technical Details
+
+The database inserts will use a migration to create the provider and all 9 products in one transaction. The JSONB structure matches the existing A-Protect product format so no UI code changes are needed.
 
