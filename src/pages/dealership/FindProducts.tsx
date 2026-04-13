@@ -202,7 +202,8 @@ const FindProducts = () => {
           </div>
         </div>
 
-        {/* Plans Grid */}
+        {/* Plans Grid — show VSC section only if there are VSC products */}
+        {warrantyProducts.length > 0 && (
         <section className="px-6 md:px-8 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -215,20 +216,9 @@ const FindProducts = () => {
             </div>
           </div>
 
-          {loading ? (
-            <div className="flex justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : warrantyProducts.length === 0 ? (
-            <div className="rounded-xl border bg-card py-16 text-center">
-              <Shield className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-              <p className="text-muted-foreground font-medium">No plans match your search.</p>
-            </div>
-          ) : (
             <div className="grid sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
               {warrantyProducts.map(plan => {
                 const groupPlans = plan.group ? getProductsByGroup(allProducts.filter(p => p.provider === selectedProvider), plan.group) : null;
-                // Convert to the shape PlanCard expects
                 const planForCard = {
                   name: plan.name,
                   slug: plan.slug,
@@ -258,8 +248,104 @@ const FindProducts = () => {
                 );
               })}
             </div>
-          )}
         </section>
+        )}
+
+        {/* PPF Section */}
+        {ppfProducts.length > 0 && (
+          <section className="bg-muted/30 border-t">
+            <div className="px-6 md:px-8 py-10">
+              <div className="mb-8">
+                <h2 className="font-display text-2xl font-bold text-foreground">Paint Protection Film</h2>
+                <p className="text-sm text-muted-foreground mt-1">{ppfProducts.length} packages available</p>
+              </div>
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {ppfProducts.map(product => {
+                  const startingPrice = product.pricingTiers?.[0]?.rows?.[0]?.values?.[0];
+                  return (
+                    <div key={product.slug} className="rounded-xl border bg-card p-6 space-y-4 hover:shadow-lg transition-all hover:border-primary/30">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-primary" />
+                        <h3 className="font-display font-bold text-lg text-foreground">{product.name}</h3>
+                      </div>
+                      {product.tier && (
+                        <Badge variant="outline" className="text-xs">{product.group}</Badge>
+                      )}
+                      <ul className="space-y-1.5">
+                        {(product.includedCoverage || []).slice(0, 5).map((item, i) => (
+                          <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                            <Check className="h-3 w-3 text-primary mt-0.5 shrink-0" /> {item}
+                          </li>
+                        ))}
+                      </ul>
+                      {startingPrice != null && (
+                        <div className="pt-3 border-t border-border/50">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Starting from</p>
+                          <p className="font-display font-bold text-2xl text-primary">${Number(startingPrice).toLocaleString()}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Ceramic Coating Section */}
+        {ceramicProducts.length > 0 && (
+          <section className="border-t">
+            <div className="px-6 md:px-8 py-10">
+              <div className="mb-8">
+                <h2 className="font-display text-2xl font-bold text-foreground">Ceramic Coating</h2>
+                <p className="text-sm text-muted-foreground mt-1">{ceramicProducts.length} tiers available</p>
+              </div>
+              <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
+                {ceramicProducts.map(product => {
+                  const startingPrice = product.pricingTiers?.[0]?.rows?.[0]?.values?.[0];
+                  const warranty = (product as any).eligibility || "";
+                  return (
+                    <div key={product.slug} className="rounded-xl border bg-card p-6 space-y-4 hover:shadow-lg transition-all hover:border-primary/30">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-primary" />
+                        <h3 className="font-display font-bold text-lg text-foreground">{product.name}</h3>
+                      </div>
+                      {product.tier && (
+                        <Badge variant="outline" className="text-xs">{product.group}</Badge>
+                      )}
+                      <ul className="space-y-1.5">
+                        {(product.includedCoverage || []).slice(0, 4).map((item, i) => (
+                          <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                            <Check className="h-3 w-3 text-primary mt-0.5 shrink-0" /> {item}
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="pt-3 border-t border-border/50">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Starting from</p>
+                        {startingPrice != null ? (
+                          <p className="font-display font-bold text-2xl text-primary">${Number(startingPrice).toLocaleString()}</p>
+                        ) : (
+                          <p className="font-display font-bold text-lg text-muted-foreground">Contact for Pricing</p>
+                        )}
+                        {warranty && <p className="text-[10px] text-muted-foreground">Warranty: {warranty}</p>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Show empty state only if NO products at all for this provider */}
+        {!loading && warrantyProducts.length === 0 && tireRimProducts.length === 0 && ppfProducts.length === 0 && ceramicProducts.length === 0 && (
+          <section className="px-6 md:px-8 py-8">
+            <div className="rounded-xl border bg-card py-16 text-center">
+              <Shield className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+              <p className="text-muted-foreground font-medium">No products match your search.</p>
+            </div>
+          </section>
+        )}
 
         {/* Tire & Rim Section */}
         {tireRimProducts.length > 0 && (
