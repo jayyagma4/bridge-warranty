@@ -138,6 +138,7 @@ function formToDbFields(form: ProductForm) {
   return {
     coverage_details: {
       group: form.group || undefined,
+      tier: form.tier || undefined,
       slug: form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
       coverageCategories: form.coverageCategories.map(c => ({ name: c.name, parts: c.parts.filter(Boolean) })),
       termsSections: form.termsSections,
