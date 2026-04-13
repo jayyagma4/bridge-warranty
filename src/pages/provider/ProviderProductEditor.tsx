@@ -218,14 +218,30 @@ const ProviderProductEditor = () => {
   // Load provider membership + product data
   useEffect(() => {
     const load = async () => {
-      // Try to get provider membership if user is logged in
+      let pid: string | null = null;
       if (user) {
         const { data: membership } = await supabase
           .from("provider_members")
           .select("provider_id")
           .eq("user_id", user.id)
           .maybeSingle();
-        if (membership) setProviderId(membership.provider_id);
+        if (membership) { pid = membership.provider_id; setProviderId(membership.provider_id); }
+      }
+
+      // Fetch existing plan groups for this provider
+      if (pid) {
+        const { data: prods } = await supabase
+          .from("products")
+          .select("coverage_details, type")
+          .eq("provider_id", pid);
+        if (prods) {
+          const groups = new Map<string, string>();
+          prods.forEach((p: any) => {
+            const g = (p.coverage_details as any)?.group;
+            if (g) groups.set(g, p.type);
+          });
+          setExistingGroups(Array.from(groups.entries()).map(([group, type]) => ({ group, type })));
+        }
       }
 
       if (!isNew && id) {
@@ -233,7 +249,7 @@ const ProviderProductEditor = () => {
           const product = await fetchProductById(id);
           if (product) {
             setForm(dbProductToForm(product));
-            if (!providerId) setProviderId(product.provider_id);
+            if (!pid) setProviderId(product.provider_id);
           }
         } catch (err) {
           console.error("Failed to load product:", err);
