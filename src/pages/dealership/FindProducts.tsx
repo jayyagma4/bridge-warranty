@@ -66,18 +66,18 @@ const FindProducts = () => {
     );
   };
 
-  const filterByType = (type: string) => {
+  const filterByType = (type: string, group = true) => {
     const providerProducts = allProducts.filter(p => p.provider === selectedProvider && p.type === type && p.status === "active");
-    const grouped = getGroupedDisplayProducts(providerProducts);
-    if (!searchQuery.trim()) return grouped;
+    const result = group ? getGroupedDisplayProducts(providerProducts) : providerProducts;
+    if (!searchQuery.trim()) return result;
     const q = searchQuery.toLowerCase();
-    return grouped.filter(p => p.name.toLowerCase().includes(q));
+    return result.filter(p => p.name.toLowerCase().includes(q));
   };
 
   const warrantyProducts = useMemo(() => filterByType("VSC"), [allProducts, selectedProvider, searchQuery]);
-  const tireRimProducts = useMemo(() => filterByType("Tire & Rim"), [allProducts, selectedProvider, searchQuery]);
-  const ppfProducts = useMemo(() => filterByType("PPF"), [allProducts, selectedProvider, searchQuery]);
-  const ceramicProducts = useMemo(() => filterByType("Ceramic Coating"), [allProducts, selectedProvider, searchQuery]);
+  const tireRimProducts = useMemo(() => filterByType("Tire & Rim", false), [allProducts, selectedProvider, searchQuery]);
+  const ppfProducts = useMemo(() => filterByType("PPF", false), [allProducts, selectedProvider, searchQuery]);
+  const ceramicProducts = useMemo(() => filterByType("Ceramic Coating", false), [allProducts, selectedProvider, searchQuery]);
 
   return (
     <DashboardLayout navItems={dealershipNavItems} title="Find Products">
