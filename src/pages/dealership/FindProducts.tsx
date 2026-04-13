@@ -66,17 +66,18 @@ const FindProducts = () => {
     );
   };
 
-  const warrantyProducts = useMemo(() => {
-    const providerProducts = allProducts.filter(p => p.provider === selectedProvider && p.type === "VSC" && p.status === "active");
+  const filterByType = (type: string) => {
+    const providerProducts = allProducts.filter(p => p.provider === selectedProvider && p.type === type && p.status === "active");
     const grouped = getGroupedDisplayProducts(providerProducts);
     if (!searchQuery.trim()) return grouped;
     const q = searchQuery.toLowerCase();
     return grouped.filter(p => p.name.toLowerCase().includes(q));
-  }, [allProducts, selectedProvider, searchQuery]);
+  };
 
-  const tireRimProducts = useMemo(() => {
-    return allProducts.filter(p => p.provider === selectedProvider && p.type === "Tire & Rim" && p.status === "active");
-  }, [allProducts, selectedProvider]);
+  const warrantyProducts = useMemo(() => filterByType("VSC"), [allProducts, selectedProvider, searchQuery]);
+  const tireRimProducts = useMemo(() => filterByType("Tire & Rim"), [allProducts, selectedProvider, searchQuery]);
+  const ppfProducts = useMemo(() => filterByType("PPF"), [allProducts, selectedProvider, searchQuery]);
+  const ceramicProducts = useMemo(() => filterByType("Ceramic Coating"), [allProducts, selectedProvider, searchQuery]);
 
   return (
     <DashboardLayout navItems={dealershipNavItems} title="Find Products">
