@@ -61,7 +61,7 @@ const defaultBenefits: Benefit[] = [
 ];
 
 const emptyForm: ProductForm = {
-  name: "", type: "VSC", description: "", group: "", slug: "",
+  name: "", type: "VSC", description: "", group: "", tier: "", slug: "",
   maxAge: "10", maxMileage: "200000", vehicleTypes: "Cars, Light Trucks, SUVs",
   premiumMakes: "BMW, Mercedes-Benz, Audi, Lexus, Porsche, Land Rover, Jaguar",
   deductible: "200", perClaim: "", eligibilityLabel: "",
@@ -113,6 +113,7 @@ function dbProductToForm(product: any): ProductForm {
     type: product.type || "VSC",
     description: product.description || "",
     group: cd.group || "",
+    tier: cd.tier || "",
     slug: cd.slug || "",
     maxAge: String(er.max_age || "10"),
     maxMileage: String(er.max_mileage || "200000"),
