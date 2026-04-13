@@ -32,6 +32,7 @@ interface ProductForm {
   type: string;
   description: string;
   group: string;
+  tier: string;
   slug: string;
   maxAge: string;
   maxMileage: string;
