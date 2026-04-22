@@ -577,74 +577,189 @@ const Configuration = () => {
           </CardContent>
         </Card>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        {/* Search (context-aware) */}
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input
+              placeholder={view === "providers" ? "Search providers..." : `Search plans in ${providers[activeProviderId || ""] || ""}...`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
           </div>
-          <Select value={providerFilter} onValueChange={setProviderFilter}>
-            <SelectTrigger className="w-full sm:w-[220px]">
-              <SelectValue placeholder="All Providers" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Providers</SelectItem>
-              {Object.entries(providers).map(([id, name]) => (
-                <SelectItem key={id} value={id}>{name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {view === "plans" && (
+            <Select
+              value={activeProviderId || ""}
+              onValueChange={(v) => { setActiveProviderId(v); setSelectedProduct(null); setSearch(""); }}
+            >
+              <SelectTrigger className="w-full sm:w-[240px]">
+                <SelectValue placeholder="Switch provider" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(providers).map(([id, name]) => (
+                  <SelectItem key={id} value={id}>{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-sm flex-wrap">
+          <button
+            onClick={() => { setView("providers"); setActiveProviderId(null); setSelectedProduct(null); setSearch(""); }}
+            className={cn(
+              "px-2 py-1 rounded-md hover:bg-muted transition-colors",
+              view === "providers" ? "font-semibold text-foreground" : "text-muted-foreground",
+            )}
+          >
+            Providers
+          </button>
+          {view === "plans" && activeProviderId && (
+            <>
+              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50" />
+              <button
+                onClick={() => { setSelectedProduct(null); }}
+                className={cn(
+                  "px-2 py-1 rounded-md hover:bg-muted transition-colors",
+                  !selectedProduct ? "font-semibold text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {providers[activeProviderId] || "Provider"}
+              </button>
+            </>
+          )}
+          {view === "plans" && selectedProductData && (
+            <>
+              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50" />
+              <span className="px-2 py-1 font-semibold text-foreground">
+                {displayName(selectedProductData)}
+              </span>
+            </>
+          )}
+        </nav>
 
-          {/* Plans list */}
+        <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+
+          {/* Left column: Providers OR Plans */}
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
-              Plans ({filteredProducts.length})
-            </p>
-            <div className="space-y-1 max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
-              {filteredProducts.map((p) => {
-                const s = extractStructured(p.pricing);
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => setSelectedProduct(p.id)}
-                    className={cn(
-                      "w-full text-left rounded-xl px-4 py-3 transition-all duration-150 hover:bg-muted/60",
-                      selectedProduct === p.id
-                        ? "bg-primary/10 border border-primary/30 shadow-sm"
-                        : "bg-card border border-transparent",
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-sm truncate">{displayName(p)}</p>
-                        <p className="text-xs text-muted-foreground truncate">{typeLabel(p.type)}</p>
-                      </div>
-                      <ChevronRight className={cn(
-                        "w-4 h-4 shrink-0",
-                        selectedProduct === p.id ? "text-primary" : "text-muted-foreground/40",
-                      )} />
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                        {providers[p.provider_id] || "Unknown"}
-                      </Badge>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                        {s.tiers.length} tier{s.tiers.length === 1 ? "" : "s"}
-                      </Badge>
-                    </div>
-                  </button>
-                );
-              })}
-              {filteredProducts.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Package className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                  <p className="text-sm">No products found.</p>
+            {view === "providers" ? (
+              <>
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Providers ({providerList.length})
+                  </p>
                 </div>
-              )}
-            </div>
+                <div className="space-y-1.5 max-h-[calc(100vh-360px)] overflow-y-auto pr-1">
+                  {providerList.map((g) => {
+                    const typeCounts: Record<string, number> = {};
+                    g.plans.forEach((p) => {
+                      const lbl = typeLabel(p.type);
+                      typeCounts[lbl] = (typeCounts[lbl] || 0) + 1;
+                    });
+                    return (
+                      <button
+                        key={g.id}
+                        onClick={() => {
+                          setActiveProviderId(g.id);
+                          setView("plans");
+                          setSelectedProduct(null);
+                          setSearch("");
+                        }}
+                        className="w-full text-left rounded-xl px-4 py-3.5 transition-all duration-150 hover:bg-muted/60 bg-card border border-transparent hover:border-primary/20 hover:shadow-sm"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <Building2 className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-sm truncate">{g.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {g.plans.length} plan{g.plans.length === 1 ? "" : "s"}
+                            </p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground/40" />
+                        </div>
+                        <div className="flex flex-wrap gap-1 mt-2 pl-13">
+                          {Object.entries(typeCounts).map(([lbl, count]) => (
+                            <Badge key={lbl} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
+                              {count} {lbl}
+                            </Badge>
+                          ))}
+                        </div>
+                      </button>
+                    );
+                  })}
+                  {providerList.length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Building2 className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                      <p className="text-sm">No providers found.</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between px-1">
+                  <button
+                    onClick={() => { setView("providers"); setSearch(""); }}
+                    className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    All Providers
+                  </button>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {plansForActiveProvider.length} plan{plansForActiveProvider.length === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <div className="space-y-1 max-h-[calc(100vh-360px)] overflow-y-auto pr-1">
+                  {plansForActiveProvider.map((p) => {
+                    const s = extractStructured(p.pricing);
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => setSelectedProduct(p.id)}
+                        className={cn(
+                          "w-full text-left rounded-xl px-4 py-3 transition-all duration-150 hover:bg-muted/60",
+                          selectedProduct === p.id
+                            ? "bg-primary/10 border border-primary/30 shadow-sm"
+                            : "bg-card border border-transparent",
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0 flex items-center gap-2">
+                            <Shield className={cn(
+                              "w-4 h-4 shrink-0",
+                              selectedProduct === p.id ? "text-primary" : "text-muted-foreground/60",
+                            )} />
+                            <div className="min-w-0">
+                              <p className="font-semibold text-sm truncate">{displayName(p)}</p>
+                              <p className="text-xs text-muted-foreground truncate">{typeLabel(p.type)}</p>
+                            </div>
+                          </div>
+                          <ChevronRight className={cn(
+                            "w-4 h-4 shrink-0",
+                            selectedProduct === p.id ? "text-primary" : "text-muted-foreground/40",
+                          )} />
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5 pl-6">
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            {s.tiers.length} tier{s.tiers.length === 1 ? "" : "s"}
+                          </Badge>
+                        </div>
+                      </button>
+                    );
+                  })}
+                  {plansForActiveProvider.length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Package className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                      <p className="text-sm">No plans found.</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Right: detail */}
