@@ -1,70 +1,70 @@
 
 
-# Expand Configuration Pricing Editor (Plans → Tiers → Terms → Add-Ons)
+# Reorganize Configuration as Provider → Plans → Tiers Drilldown
 
 ## Problem
 
-The dealership **Configuration** page (`src/pages/dealership/settings/Configuration.tsx`) currently only lets dealers set retail prices for the **Base Price** row of each plan. It ignores:
-
-- **Multiple tiers** within a plan (e.g. Essential $1k / $1.5k / $3k claim, Diamond Plus mileage bands)
-- **Add-on rows** (Zero Deductible, Unlimited km, Hi-Tech ELITE, Seals & Gaskets, Car Rental, etc.)
-- **Mileage bands** (Diamond Plus 0–60k / 60–100k / 100–160k km)
-
-Result: dealers can mark up base coverage but cannot mark up any add-ons that drive significant revenue.
+Today the page shows one long flat list of all 22 plans across every provider. Hard to scan, and provider context is lost. You want a hierarchical browse experience with quick back/forward navigation.
 
 ## Solution
 
-Restructure the right-hand panel into a hierarchy that mirrors how providers author pricing, with editable retail price + markup % for **every** cost cell.
+Replace the single plans list with a **3-level breadcrumb-driven drilldown** in the left column. The right panel keeps the existing tier/mileage-band/matrix editor unchanged.
 
-### New layout
-
-```text
-Provider filter (top)            ← already exists
-   └─ Plans list (left column)   ← already exists, slight polish
-        └─ Tier selector (tabs)              ← NEW: e.g. "$1,000 claim", "$1,500 claim", "$3,000 claim"
-              └─ Mileage band selector       ← NEW (only when tier has mileageBands, e.g. Diamond Plus)
-                    └─ Pricing matrix        ← REBUILT
-                         rows: Base Price + every add-on row
-                         cols: each Term (3mo / 6mo / 12mo / 24mo / 36mo …)
-                         each cell: dealer cost (read-only) + your retail (editable) + markup %
-```
-
-### Editing UX
-
-- **Inline edit per cell**: click pencil → input appears in cell, save/cancel inline.
-- **Edit row**: edits all terms in one row at once (e.g. mark up "Zero Deductible" across every term).
-- **Edit all in tier**: bulk-edit every cell in the active tier with one Save button.
-- **Default markup helper**: when a cell is empty, show greyed `cost × 1.4` as suggested retail; "Apply 40% markup to all empty" button at the top of the matrix.
-- **Markup % chip** next to each retail price (green when set, muted when unset).
-- **`n/a` cells**: rendered as a dash, not editable.
-- **`Included` cells**: rendered as a green "Included" badge, not editable.
-
-### Data model
-
-No schema change needed. The existing `dealership_product_pricing.retail_price` JSONB already stores arbitrary `{key: number}` pairs. We extend the key format to uniquely identify any cell:
+### Navigation levels
 
 ```text
-old key:  "{termLabel}|{km}|{rowIndex}"          (base only, ambiguous across tiers)
-new key:  "t{tierIdx}|m{bandIdx|-}|r{rowIdx}|term{termIdx}"
+Level 1 — Providers
+   ┌──────────────────────────────────────────┐
+   │ 🏢 A-Protect Warranty Corp.   13 plans › │
+   │ 🛡 Infinite Auto Care          6 plans › │
+   │ 🏢 [Other provider]            3 plans › │
+   └──────────────────────────────────────────┘
+
+Level 2 — Plans for selected provider
+   ‹ All Providers / A-Protect Warranty Corp.
+   ┌──────────────────────────────────────────┐
+   │ Diamond Plus Warranty   VSC   4 tiers ›  │
+   │ Essential Warranty      VSC   6 tiers ›  │
+   │ Driver Program          VSC   2 tiers ›  │
+   │ ...                                      │
+   └──────────────────────────────────────────┘
+
+Level 3 — Tiers + matrix for selected plan (already built)
+   ‹ A-Protect / Diamond Plus Warranty
+   [ $5,000 / claim ] [ $7,500 / claim ] ...
+   [ Mileage band selector ]
+   [ Pricing matrix with editable cells ]
 ```
 
-A small migration helper in code reads any old base-price keys on load and remaps them to `t0|m-|r0|term{i}` so existing dealer markups are preserved.
+### UX details
+
+- **Breadcrumb bar** at the top of the left column: `‹ Providers / A-Protect / Diamond Plus`. Each crumb is clickable to jump back.
+- **Search bar** is context-aware:
+  - At Provider level → searches provider names.
+  - At Plans level → searches plans within the active provider.
+- **Provider cards** show: company name, total plan count, count by type (e.g. "10 VSC · 1 Tire & Rim").
+- **Plan cards** keep the current style (name, type, tier count badge) but no longer need a provider badge (context is implied).
+- **Back navigation**: a `‹ Back` chip + native browser-style click on the breadcrumb. Selecting a plan slides the right panel into the existing matrix view — no layout shift.
+- **Quick provider switch**: a small dropdown next to the breadcrumb lets you jump between providers without going back to Level 1.
+- The existing **All Providers** filter dropdown is removed (replaced by the drilldown itself).
+
+### State
+
+Add two view-mode states; no DB changes:
+- `view: "providers" | "plans"` — controls the left column.
+- `activeProviderId: string | null` — set when entering Level 2.
+- Selecting a plan keeps `view = "plans"` so the user can quickly pick another sibling plan from the same provider.
 
 ### Files to change
 
-- `src/pages/dealership/settings/Configuration.tsx` — main rewrite of the right panel:
-  - Replace `extractFlatTiers` with a structured extractor that returns `{ tiers: [{ label, mileageBands?, terms[], rows[{label, values[]}] }] }`.
-  - Add `Tabs` for tier selection and (when present) mileage band selection.
-  - Render an editable matrix table (`<table>` with sticky first column for row labels and sticky header for terms).
-  - New per-cell save / per-row save / save-all logic writing into the same `dealership_product_pricing` row.
-  - Add "Apply X% markup to all empty cells" toolbar action (default 40%, editable input).
+- `src/pages/dealership/settings/Configuration.tsx` — replace the left column (currently one flat list, lines ~580–627) with the 3-level drilldown described above. Keep the right detail panel and matrix logic untouched.
 
 ### Verification
 
-After build, on `/dealership/settings/configuration`:
-1. Select **A-Protect** in the provider filter.
-2. Open **Essential Warranty** → confirm 3 tier tabs appear ($1,000 / $1,500 / $3,000 claim) and each shows a 4-term × N-row matrix.
-3. Open **Diamond Plus Warranty** → confirm a second selector for mileage bands (0–60k / 60–100k / 100–160k km).
-4. Edit retail price on a non-base row (e.g. "Zero Deductible / 24 Mo"), save, refresh — value persists, markup % shown.
-5. Open **Find Products** as the same dealer — your custom retail prices for add-ons flow through to the customer-facing display.
+1. Open `/dealership/settings/configuration` → see provider cards (A-Protect, Infinite Auto Care, …) with plan counts.
+2. Click **A-Protect** → list collapses to A-Protect plans only; breadcrumb shows `‹ Providers / A-Protect`.
+3. Click **Diamond Plus Warranty** → right panel shows existing tiers/mileage bands/matrix.
+4. Click **‹ A-Protect** in breadcrumb → returns to plan list (still A-Protect).
+5. Click **‹ Providers** → returns to provider list.
+6. Use the provider switch dropdown next to the breadcrumb to jump from A-Protect plans → Infinite Auto Care plans without going back to Level 1.
 
