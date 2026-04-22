@@ -174,7 +174,8 @@ const Configuration = () => {
   const [pricingConfigs, setPricingConfigs] = useState<Record<string, PricingConfig>>({});
   const [confidentialityEnabled, setConfidentialityEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  // selectedPlanKey is either "prod:<productId>" or "group:<providerId>:<groupName>"
+  const [selectedPlanKey, setSelectedPlanKey] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"providers" | "plans">("providers");
   const [activeProviderId, setActiveProviderId] = useState<string | null>(null);
