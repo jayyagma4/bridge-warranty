@@ -1,60 +1,48 @@
 
 
-# Restore the $3,000 Per-Claim Tier on Powertrain Platinum
+# Finish Outstanding Find Products Fixes
 
-## Problem
+Two items from earlier in this conversation were planned but never implemented. Bundling them into one pass.
 
-Powertrain Platinum is supposed to have **two per-claim tiers** ($2,500 and $3,000). The seed data file (`src/data/warrantyPlans.ts`) contains both, but the database row only stores the $2,500 tier — so Configuration only lets the dealer mark up the lower tier. Find Products shows the range "$2,500 – $3,000" because that text comes from the `claimRange` string, not from real pricing.
+## 1. Make hero buttons visible without hover
 
-There's also a secondary bug in `Configuration.tsx`: when a product belongs to a `group`, the merged-tier builder takes only `s.tiers[0]` from each sibling, so even if the $3,000 tier were restored it would be silently dropped.
+**File**: `src/pages/dealership/FindProducts.tsx` (the two outline buttons in the hero CTA row)
 
-## Fix
+Replace `border-white/20 text-white hover:bg-white/10` with `bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm` so **Compare All Plans** and **New Quote** show as visible translucent pills against the dark hero. Primary yellow "Start with VIN" button unchanged.
 
-Two small changes — no schema changes.
+## 2. Wire the "Show Retail to Customers" toggle into Find Products
 
-### 1. Backfill the missing $3,000 tier on Powertrain Platinum
+Today the toggle in `/dealership/settings/configuration` saves `confidentiality_enabled` to `dealership_product_pricing` but Find Products ignores it and always shows raw dealer cost.
 
-Update `products.pricing.pricingTiers` for `Powertrain Platinum` to append the second tier from the canonical seed data:
+### Desired behavior
 
-```
-perClaimAmount: 3000, deductible: 100
-terms: 12 / 24 / 36 / 48 mo
-rows: Base Price, Unlimited km, Zero Deductible, Seals & Gaskets,
-      Car Rental, Air Conditioning, Hi-Tech Components
-```
+| Toggle | Find Products shows |
+|---|---|
+| **ON** | Only products with at least one configured retail price; cells use marked-up retail (cost as fallback per missing cell) |
+| **OFF** | All active products at raw dealer cost |
 
-Done with a single `UPDATE` using `jsonb_set` on the `pricing` column — no other product affected.
+### New file: `src/lib/dealershipPricing.ts`
 
-### 2. Make grouped plans expose every per-claim tier
+- `fetchDealershipPricing(dealershipId)` → `{ confidentialityEnabled, byProductId: Record<productId, Record<cellKey, number>> }`
+- `applyRetailOverlay(dbProduct, retailMap)` → returns a new `DBProduct` whose `pricing.pricingTiers[*].rows[*].values` and `mileageBands[*].values` are rewritten using the same `t{tier}|m{band}|r{row}|term{term}` keys Configuration writes. Missing cells fall back to cost.
+- `hasAnyRetail(retailMap)` → true if at least one numeric override exists.
 
-In `src/pages/dealership/settings/Configuration.tsx`, the `structured / tierProductIds / tierStorageIdx` memo currently does:
+### Edit: `src/pages/dealership/FindProducts.tsx`
 
-```ts
-const t0 = s.tiers[0];           // ← drops $3,000 tier
-tiers.push({ ...t0, label: tierLabel });
-```
+- Pull `dealershipId` via `useDealership()`.
+- After `fetchProducts()`, call `fetchDealershipPricing()`.
+- **ON**: keep only products where `hasAnyRetail(map[id])`, apply `applyRetailOverlay` before `dbToDisplayList`.
+- **OFF**: pass raw products through (current behavior).
+- Add a small header badge — "Showing: Retail" (yellow) / "Showing: Dealer Cost" (muted) — so dealers know which view their customers see.
 
-Replace with a loop so **every** `pricingTiers` entry on each sibling becomes its own tab:
+### Edit: `src/pages/dealership/settings/Configuration.tsx`
 
-- For sibling with 1 tier → label tab as the sibling tier name (e.g. "Bronze").
-- For sibling with 2+ tiers → label tabs as `"{Tier} — ${perClaim}/claim"` (e.g. "Platinum — $2,500/claim", "Platinum — $3,000/claim").
-- `tierProductIds[i]` keeps mapping back to the correct product id.
-- `tierStorageIdx[i]` records the original `pricingTiers` index so saves write to `t{idx}|m…|r…|term…` correctly (no collision between the $2,500 and $3,000 cells of the same product).
+When the dealer toggles ON, if no products have any retail overrides yet, show a non-blocking toast: *"No retail prices configured — Find Products will be empty for customers until you set prices."*
 
-Single-product (non-grouped) selection already iterates all tiers correctly — no change needed there.
+## Verification
 
-### Files to change
-
-- **DB update** (insert tool): backfill `pricing.pricingTiers` on the Powertrain Platinum row.
-- **Edit** `src/pages/dealership/settings/Configuration.tsx`: in the `structured` memo for `kind === "group"`, iterate over `s.tiers` instead of taking only `s.tiers[0]`.
-
-### Verification
-
-1. Reload `/dealership/settings/configuration` → A-Protect → Powertrain Plan.
-2. Click the **Platinum** tier → tab strip now shows two sub-tabs: `Platinum — $2,500/claim` and `Platinum — $3,000/claim`.
-
-   *(Bronze / Silver / Gold still show as single tabs since they only have one per-claim tier.)*
-3. Switch to the $3,000 tab → matrix shows the 4-term, 7-row pricing from the spec; cost values match Find Products.
-4. Edit a $3,000-tier cell and save → reloading shows the value persisted, and the $2,500 tab is unaffected.
-5. Find Products quoting flow continues to show both per-claim options.
+1. Visit `/dealership/find-products` — both hero secondary buttons readable at rest.
+2. Sign in as `ecat@bridgewarranty.com`, toggle **Show Retail OFF** in Configuration → Find Products lists all active plans at cost; badge reads "Dealer Cost".
+3. Set a retail markup on one Powertrain tier, toggle **ON** → Find Products shows only the Powertrain card at retail price; badge reads "Retail"; other unconfigured plans hidden.
+4. Toggling ON with zero retail prices set fires the warning toast.
 
