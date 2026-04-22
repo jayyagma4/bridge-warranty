@@ -736,10 +736,10 @@ const Configuration = () => {
             <>
               <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50" />
               <button
-                onClick={() => { setSelectedProduct(null); }}
+              onClick={() => { setSelectedPlanKey(null); }}
                 className={cn(
                   "px-2 py-1 rounded-md hover:bg-muted transition-colors",
-                  !selectedProduct ? "font-semibold text-foreground" : "text-muted-foreground",
+                  !selectedPlanKey ? "font-semibold text-foreground" : "text-muted-foreground",
                 )}
               >
                 {providers[activeProviderId] || "Provider"}
