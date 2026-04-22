@@ -296,12 +296,11 @@ const Configuration = () => {
         if (seenGroups.has(grp)) continue;
         seenGroups.add(grp);
         const siblings = sortSiblings(list.filter((x) => (x.coverage_details?.group || x.group) === grp));
-        const groupLabel = grp.charAt(0).toUpperCase() + grp.slice(1);
         entries.push({
           kind: "group",
           key: `group:${activeProviderId}:${grp}`,
           group: grp,
-          displayName: `${groupLabel} Plan`,
+          displayName: prettyGroupLabel(grp),
           type: siblings[0].type,
           products: siblings,
           tierCount: siblings.length,
@@ -342,12 +341,11 @@ const Configuration = () => {
       const grp = selectedPlanKey.split(":")[2];
       const siblings = sortSiblings(list.filter((x) => (x.coverage_details?.group || x.group) === grp));
       if (!siblings.length) return null;
-      const groupLabel = grp.charAt(0).toUpperCase() + grp.slice(1);
       return {
         kind: "group",
         key: selectedPlanKey,
         group: grp,
-        displayName: `${groupLabel} Plan`,
+        displayName: prettyGroupLabel(grp),
         type: siblings[0].type,
         products: siblings,
         tierCount: siblings.length,
