@@ -373,12 +373,17 @@ const Configuration = () => {
     const storageIdx: number[] = [];
     for (const p of selectedPlanEntry.products) {
       const s = extractStructured(p.pricing);
-      const t0 = s.tiers[0];
-      if (!t0) continue;
-      const tierLabel = (p.coverage_details?.tier || p.tier || t0.label) as string;
-      tiers.push({ ...t0, label: tierLabel });
-      ids.push(p.id);
-      storageIdx.push(0);
+      if (!s.tiers.length) continue;
+      const baseLabel = (p.coverage_details?.tier || p.tier || s.tiers[0].label) as string;
+      const multi = s.tiers.length > 1;
+      s.tiers.forEach((t, idx) => {
+        const label = multi
+          ? `${baseLabel} — $${(t.perClaimAmount ?? 0).toLocaleString()}/claim`
+          : baseLabel;
+        tiers.push({ ...t, label });
+        ids.push(p.id);
+        storageIdx.push(idx);
+      });
     }
     return { structured: { tiers }, tierProductIds: ids, tierStorageIdx: storageIdx };
   }, [selectedPlanEntry]);
