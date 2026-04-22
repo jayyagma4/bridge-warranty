@@ -746,11 +746,11 @@ const Configuration = () => {
               </button>
             </>
           )}
-          {view === "plans" && selectedProductData && (
+          {view === "plans" && selectedPlanEntry && (
             <>
               <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50" />
               <span className="px-2 py-1 font-semibold text-foreground">
-                {displayName(selectedProductData)}
+                {selectedPlanEntry.displayName}
               </span>
             </>
           )}
@@ -897,7 +897,7 @@ const Configuration = () => {
                         <DollarSign className="w-6 h-6 text-primary" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-xl font-bold">{displayName(selectedProductData)}</h3>
+                        <h3 className="text-xl font-bold">{selectedPlanEntry?.displayName ?? displayName(selectedProductData)}</h3>
                         <p className="text-sm text-muted-foreground mt-0.5">
                           {typeLabel(selectedProductData.type)} • {providers[selectedProductData.provider_id] || "Unknown Provider"}
                         </p>
