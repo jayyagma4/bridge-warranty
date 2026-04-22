@@ -780,7 +780,7 @@ const Configuration = () => {
                         onClick={() => {
                           setActiveProviderId(g.id);
                           setView("plans");
-                          setSelectedProduct(null);
+                          setSelectedPlanKey(null);
                           setSearch("");
                         }}
                         className="w-full text-left rounded-xl px-4 py-3.5 transition-all duration-150 hover:bg-muted/60 bg-card border border-transparent hover:border-primary/20 hover:shadow-sm"
@@ -830,15 +830,15 @@ const Configuration = () => {
                   </p>
                 </div>
                 <div className="space-y-1 max-h-[calc(100vh-360px)] overflow-y-auto pr-1">
-                  {plansForActiveProvider.map((p) => {
-                    const s = extractStructured(p.pricing);
+                  {plansForActiveProvider.map((entry) => {
+                    const isSelected = selectedPlanKey === entry.key;
                     return (
                       <button
-                        key={p.id}
-                        onClick={() => setSelectedProduct(p.id)}
+                        key={entry.key}
+                        onClick={() => setSelectedPlanKey(entry.key)}
                         className={cn(
                           "w-full text-left rounded-xl px-4 py-3 transition-all duration-150 hover:bg-muted/60",
-                          selectedProduct === p.id
+                          isSelected
                             ? "bg-primary/10 border border-primary/30 shadow-sm"
                             : "bg-card border border-transparent",
                         )}
@@ -847,21 +847,21 @@ const Configuration = () => {
                           <div className="min-w-0 flex items-center gap-2">
                             <Shield className={cn(
                               "w-4 h-4 shrink-0",
-                              selectedProduct === p.id ? "text-primary" : "text-muted-foreground/60",
+                              isSelected ? "text-primary" : "text-muted-foreground/60",
                             )} />
                             <div className="min-w-0">
-                              <p className="font-semibold text-sm truncate">{displayName(p)}</p>
-                              <p className="text-xs text-muted-foreground truncate">{typeLabel(p.type)}</p>
+                              <p className="font-semibold text-sm truncate">{entry.displayName}</p>
+                              <p className="text-xs text-muted-foreground truncate">{typeLabel(entry.type)}</p>
                             </div>
                           </div>
                           <ChevronRight className={cn(
                             "w-4 h-4 shrink-0",
-                            selectedProduct === p.id ? "text-primary" : "text-muted-foreground/40",
+                            isSelected ? "text-primary" : "text-muted-foreground/40",
                           )} />
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5 mt-1.5 pl-6">
                           <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                            {s.tiers.length} tier{s.tiers.length === 1 ? "" : "s"}
+                            {entry.tierCount} tier{entry.tierCount === 1 ? "" : "s"}
                           </Badge>
                         </div>
                       </button>
