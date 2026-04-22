@@ -234,13 +234,32 @@ const Configuration = () => {
     fetchData();
   }, [dealershipId, user]);
 
-  const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
-      const matchesSearch = !search || displayName(p).toLowerCase().includes(search.toLowerCase());
-      const matchesProvider = providerFilter === "all" || p.provider_id === providerFilter;
-      return matchesSearch && matchesProvider;
+  // Group products by provider for Level 1
+  const providerGroups = useMemo(() => {
+    const groups: Record<string, Product[]> = {};
+    products.forEach((p) => {
+      if (!groups[p.provider_id]) groups[p.provider_id] = [];
+      groups[p.provider_id].push(p);
     });
-  }, [products, search, providerFilter]);
+    return groups;
+  }, [products]);
+
+  const providerList = useMemo(() => {
+    return Object.entries(providerGroups)
+      .map(([id, plans]) => ({
+        id,
+        name: providers[id] || "Unknown Provider",
+        plans,
+      }))
+      .filter((g) => !search || view !== "providers" || g.name.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [providerGroups, providers, search, view]);
+
+  const plansForActiveProvider = useMemo(() => {
+    if (!activeProviderId) return [];
+    const list = providerGroups[activeProviderId] || [];
+    return list.filter((p) => !search || displayName(p).toLowerCase().includes(search.toLowerCase()));
+  }, [providerGroups, activeProviderId, search]);
 
   const selectedProductData = products.find((p) => p.id === selectedProduct);
   const structured: Structured = useMemo(
