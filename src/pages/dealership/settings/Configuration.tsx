@@ -724,7 +724,7 @@ const Configuration = () => {
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm flex-wrap">
           <button
-            onClick={() => { setView("providers"); setActiveProviderId(null); setSelectedProduct(null); setSearch(""); }}
+            onClick={() => { setView("providers"); setActiveProviderId(null); setSelectedPlanKey(null); setSearch(""); }}
             className={cn(
               "px-2 py-1 rounded-md hover:bg-muted transition-colors",
               view === "providers" ? "font-semibold text-foreground" : "text-muted-foreground",
