@@ -261,9 +261,22 @@ const Configuration = () => {
     | { kind: "single"; key: string; product: Product; displayName: string; type: string; tierCount: number }
     | { kind: "group"; key: string; group: string; displayName: string; type: string; products: Product[]; tierCount: number };
 
+  const prettyGroupLabel = (grp: string) => {
+    const map: Record<string, string> = {
+      "tire-rim": "Tire & Rim Plan",
+      powertrain: "Powertrain Plan",
+    };
+    if (map[grp]) return map[grp];
+    const titled = grp
+      .split(/[-_\s]+/)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+    return `${titled} Plan`;
+  };
+
   const sortSiblings = (siblings: Product[]) =>
     [...siblings].sort((a, b) => {
-      const order = ["bronze", "silver", "gold", "platinum"];
+      const order = ["bronze", "silver", "gold", "platinum", "essential", "extended", "superior"];
       const ar = order.indexOf((a.coverage_details?.tier || a.tier || "").toLowerCase());
       const br = order.indexOf((b.coverage_details?.tier || b.tier || "").toLowerCase());
       if (ar === -1 && br === -1) return 0;
