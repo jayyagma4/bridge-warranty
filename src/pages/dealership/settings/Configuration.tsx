@@ -213,7 +213,7 @@ const Configuration = () => {
         setProviders(map);
       }
 
-      if (prodList.length > 0) setSelectedProduct(prodList[0].id);
+      // Start at provider list (no auto-select)
 
       if (dealershipId) {
         const { data: configs } = await supabase
