@@ -13,6 +13,7 @@ import { useDealership } from "@/hooks/useDealership";
 import { useToast } from "@/hooks/use-toast";
 import {
   Settings2, DollarSign, Pencil, Check, X, ChevronRight, Search, Package, Zap,
+  Building2, ChevronLeft, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
