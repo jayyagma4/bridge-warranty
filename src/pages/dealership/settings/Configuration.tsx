@@ -429,6 +429,23 @@ const Configuration = () => {
           .eq("product_id", productId);
       }
     }
+
+    if (enabled) {
+      const anyRetail = Object.values(pricingConfigs).some((c) =>
+        Object.values((c.retail_price || {}) as Record<string, number>).some(
+          (v) => typeof v === "number" && !isNaN(v)
+        )
+      );
+      if (!anyRetail) {
+        toast({
+          title: "No retail prices configured",
+          description: "Find Products will be empty for customers until you set prices.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     toast({
       title: enabled ? "Customer-facing retail enabled" : "Customer-facing retail disabled",
       description: enabled ? "Customers will see your retail prices on quotes." : "Showing dealer cost only.",
