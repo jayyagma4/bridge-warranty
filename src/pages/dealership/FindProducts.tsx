@@ -10,6 +10,8 @@ import {
   ChevronRight, Check, ShoppingCart, Loader2,
 } from "lucide-react";
 import { fetchProducts, dbToDisplayList, getGroupedDisplayProducts, getProductsByGroup, type DisplayProduct } from "@/lib/productService";
+import { fetchDealershipPricing, applyRetailOverlay, hasAnyRetail } from "@/lib/dealershipPricing";
+import { useDealership } from "@/hooks/useDealership";
 import PlanCard from "@/components/brochure/PlanCard";
 
 interface VehicleInfo {
@@ -36,14 +38,27 @@ const FindProducts = () => {
   const [loading, setLoading] = useState(true);
   const [providers, setProviders] = useState<string[]>([]);
   const [selectedProvider, setSelectedProvider] = useState("");
+  const [showingRetail, setShowingRetail] = useState(false);
+  const { dealershipId } = useDealership();
 
   useEffect(() => {
     const load = async () => {
       try {
         const data = await fetchProducts();
-        const display = dbToDisplayList(data);
+        const { confidentialityEnabled, byProductId } = await fetchDealershipPricing(dealershipId);
+        setShowingRetail(confidentialityEnabled);
+
+        let processed = data;
+        if (confidentialityEnabled) {
+          // Only products with at least one configured retail price; overlay retail values
+          processed = data
+            .filter((p) => hasAnyRetail(byProductId[p.id]))
+            .map((p) => applyRetailOverlay(p, byProductId[p.id]));
+        }
+
+        const display = dbToDisplayList(processed);
         setAllProducts(display);
-        
+
         // Extract unique providers
         const provs = [...new Set(display.map(p => p.provider))].sort();
         setProviders(provs);
@@ -55,7 +70,7 @@ const FindProducts = () => {
       }
     };
     load();
-  }, []);
+  }, [dealershipId]);
 
   const handleDecode = () => setVehicleInfo(mockDecodeVin(vin));
   const handleReset = () => { setVin(""); setMileage(""); setLoanAmount(""); setVehicleInfo(null); };
@@ -86,7 +101,18 @@ const FindProducts = () => {
         <section className="bg-gradient-to-br from-[hsl(225,80%,15%)] via-[hsl(225,70%,20%)] to-[hsl(225,60%,25%)] text-white">
           <div className="px-6 md:px-8 py-10 md:py-14">
             <div className="max-w-2xl">
-              <Badge className="bg-accent/20 text-accent border-accent/30 mb-4">Dealer Product Finder</Badge>
+              <div className="flex items-center gap-2 mb-4">
+                <Badge className="bg-accent/20 text-accent border-accent/30">Dealer Product Finder</Badge>
+                <Badge
+                  className={
+                    showingRetail
+                      ? "bg-accent text-[#0f1b3d] border-transparent"
+                      : "bg-white/10 text-white border-white/30"
+                  }
+                >
+                  Showing: {showingRetail ? "Retail" : "Dealer Cost"}
+                </Badge>
+              </div>
               <h1 className="font-display text-2xl md:text-4xl font-bold leading-tight">
                 Browse & Quote<br />
                 <span className="text-accent">Warranty Plans</span>
@@ -98,10 +124,10 @@ const FindProducts = () => {
                 <Button asChild size="lg" className="bg-accent text-[#0f1b3d] hover:bg-accent/90 font-semibold">
                   <a href="#vin-bar"><Car className="mr-1.5 h-4 w-4" /> Start with VIN</a>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                <Button asChild size="lg" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm">
                   <Link to="/dealership/compare"><BarChart3 className="mr-1.5 h-4 w-4" /> Compare All Plans</Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                <Button asChild size="lg" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm">
                   <Link to="/purchase"><ShoppingCart className="mr-1.5 h-4 w-4" /> New Quote</Link>
                 </Button>
               </div>
