@@ -1,70 +1,58 @@
 
 
-# Plan: Add Infinite Auto Care as Provider with PPF and Ceramic Coating Products
+# Fix A-Protect Dealer Cost Pricing to Match Dealer Book V25
 
-## Summary
+## Problem confirmed
 
-Scrape data from infiniteautocare.ca has been completed. We will create **Infinite Auto Care** as a new provider and upload their **2 product groups** (Paint Protection Film with 5 packages, Ceramic Coating with 4 packages) into the marketplace.
+I parsed the uploaded **Dealer Book V25** and compared every plan against the database. **Dealer costs in the database are wrong across all A-Protect products.** Examples:
 
-## Extracted Product Data
+| Plan | Tier / Term | Dealer Book V25 | Database (current) |
+|------|-------------|-----------------|--------------------|
+| Powertrain Bronze | 12 Mo / 12,000 km | **$89** | $1,279 |
+| Powertrain Silver | 24 Mo / 24,000 km | **$159** | $1,329 |
+| Powertrain Gold | 36 Mo / 60,000 km | **$279** | (mismatch) |
+| Powertrain Platinum | 48 Mo / 80,000 km | **$489** | (mismatch) |
+| Essential $1000 / 12 Mo | Base Price | **$189** | $889 |
+| Essential $1500 / 12 Mo | Base Price | **$219** | $919 |
+| Essential $3000 / 12 Mo | Base Price | **$369** | $1,369 |
+| Essential $5000 / 12 Mo | Base Price | **$529** | (mismatch) |
+| Premium Special $3000 / 12 Mo | Base Price | **$479** | (mismatch) |
+| Premium Special $4000 / 12 Mo | Base Price | **$639** | (mismatch) |
+| Premium Special $5000 / 12 Mo | Base Price | **$699** | (mismatch) |
+| Luxury $1000 / 12 Mo | Base Price | **$279** | (mismatch) |
+| Luxury $2500 / 24 Mo | Base Price | **$629** | (mismatch) |
+| Diamond Plus $5000 / 12 Mo (0–60k) | Base Price | **$819** | $3,279 |
+| Diamond Plus $7500 / 24 Mo (0–60k) | Base Price | **$989** | $3,489 |
+| Diamond Plus $10,000 / 24 Mo (0–60k) | Base Price | **$1,099** | $4,099 |
 
-### Provider: Infinite Auto Care
-- Location: Ottawa & Gatineau
-- Services: PPF (XPEL Authorized Dealer), Ceramic Coating (Feynlab Certified)
+The DB values look like inflated retail markups. The dealer book numbers are the true dealer cost.
 
-### Product 1: Paint Protection Film (type: "PPF")
-**Plan Group: XPEL Paint Protection Film** — 5 tiers:
+## Plan
 
-| Tier | Starting Price | Coverage |
-|------|---------------|----------|
-| High Impact Package | $399.99 | Partial Hood, Partial Fenders, Headlights |
-| Partial Front End Package | $899.99 | Front Bumper, Partial Hood, Partial Fenders, Headlights |
-| Full Front End Package | $1,699.00 | Full Front Bumper, Full Hood, Full Fenders, Headlights, Mirrors |
-| Full Vehicle PPF Package | $4,499.00 | Full Exterior Coverage (also available in Stealth PPF) |
-| Track Pack | $1,999.00 | Full Front Bumper, Full Hood, Full Fenders, Headlights, Mirrors, Rocker Panels, Lower Doors |
+Rebuild the `pricing.pricingTiers` JSON for every A-Protect product using exact values from the Dealer Book V25 PDF. One data-only update per product — no schema or UI changes needed.
 
-Features: Self-healing technology, 10-year warranty, UV protection, stain resistance
+### Products to update (provider: A-Protect Warranty Corporation)
 
-### Product 2: Ceramic Coating (type: "Ceramic Coating")
-**Plan Group: Feynlab Ceramic Coating** — 4 tiers:
+1. **Powertrain Bronze** — $750/claim, 5 terms (3/6/12/24/36 mo), base + add-ons
+2. **Powertrain Silver** — $1,000/claim, 5 terms, base + 4 add-on rows
+3. **Powertrain Gold** — $1,500/claim, 5 terms, base + 6 add-on rows
+4. **Powertrain Platinum** — $2,500/claim, 5 terms, base + 6 add-on rows
+5. **Powertrain Diamond** — $3,000/claim, 4 terms, base + 6 add-on rows
+6. **Essential Warranty** — 3 tiers ($1,000 / $1,500 / $3,000 per claim) + 3 extended tiers ($5,000 / $7,500 / $10,000 with Premium Vehicle Fee) — 4 terms each
+7. **Premium Special Warranty** — 3 tiers ($3,000 / $4,000 / $5,000 per claim) with Hi-Tech ELITE, Hybrid, Premium Vehicle Fee
+8. **Luxury Warranty** — 4 tiers ($1,000 / $1,500 / $2,500 / $3,000 per claim)
+9. **Diamond Plus Warranty** — 3 tiers ($5,000 / $7,500 / $10,000 per claim) with mileage bands (0-60k / 60-100k / 100-160k km)
+10. **Driver Program** — $1,500 and $3,000 per claim (rideshare/delivery)
+11. **Pro Warranty** — $5,000 and $10,000 per claim (light commercial)
+12. **Tire & Rim Protection** — Class 1/2/3 vehicle classes × terms 12/24/36/48/60/72/84 months
 
-| Tier | Starting Price | Warranty |
-|------|---------------|----------|
-| FeynLab V3 | $899.99 | 3 Years |
-| FeynLab Ultra V2 | $999.99 | 5 Years |
-| FeynLab Self Heal Lite | Contact for Pricing | 5 Years |
-| FeynLab Self Heal Plus | Contact for Pricing | 7 Years |
+### Execution
 
-## Implementation Steps
+- Single data update (insert tool with UPDATE statements) writing the corrected `pricing` JSONB for each product.
+- Preserve existing `coverage_details`, `eligibility_rules`, benefits, salesTag, premiumVehicleFee makes list, and importantNotes — only `pricingTiers` values are corrected.
+- After update, the dealer-facing **Find Products**, **Configuration**, and **Plan Detail** pages will automatically display the correct dealer costs (they all read from the same `pricing` field).
 
-### Step 1: Create Provider Record
-- Insert "Infinite Auto Care" into the `providers` table with status "approved"
-- Create a migration or use the existing provider insertion pattern
+### Verification
 
-### Step 2: Insert 9 Product Records
-Each product will be a row in the `products` table with:
-- `provider_id` pointing to Infinite Auto Care
-- `type`: "PPF" or "Ceramic Coating"  
-- `coverage_details` JSONB: `{ group, tier, slug, includedCoverage, coverageCategories }`
-- `pricing` JSONB: `{ pricingTiers, claimRange, deductible }`
-- `eligibility_rules` JSONB: eligibility info
-- `status`: "active"
-
-**PPF products** (5 rows) all share group "XPEL Paint Protection Film":
-- Each tier stores its coverage areas, starting price, and warranty details
-
-**Ceramic Coating products** (4 rows) all share group "Feynlab Ceramic Coating":
-- Each tier stores its features, warranty duration, and price
-
-### Step 3: Ensure Product Type Support
-- Add "PPF" and "Ceramic Coating" to `TYPE_LABELS` in `productService.ts` (PPF is already there, Ceramic Coating is already there)
-- No code changes needed for type support
-
-### Step 4: Verify Display
-- Products will automatically appear on Provider Products page, Dealer Find Products page, and brochure pages via existing `fetchProducts()` logic
-- The group/tier structure will render correctly using the existing `coverage_details.group` and `coverage_details.tier` fields
-
-## Technical Details
-
-The database inserts will use a migration to create the provider and all 9 products in one transaction. The JSONB structure matches the existing A-Protect product format so no UI code changes are needed.
+After update I will re-query the database for 3 spot checks (Powertrain Gold 24mo, Essential $1000 12mo, Diamond Plus $5000 12mo 0-60k) and confirm each matches the PDF exactly.
 
