@@ -1,70 +1,51 @@
 
 
-# Reorganize Configuration as Provider → Plans → Tiers Drilldown
+# Group Powertrain Plans by Their Shared "powertrain" Group
 
 ## Problem
 
-Today the page shows one long flat list of all 22 plans across every provider. Hard to scan, and provider context is lost. You want a hierarchical browse experience with quick back/forward navigation.
+The 4 A-Protect Powertrain products (Bronze, Silver, Gold, Platinum) appear as 4 separate rows in the Plans list. They share `coverage_details.group = "powertrain"`, so they should collapse into **one** card called "Powertrain Plan" with **4 tiers** — Bronze / Silver / Gold / Platinum — selectable inside the matrix view (same UX as the existing per-claim-amount tier tabs).
 
 ## Solution
 
-Replace the single plans list with a **3-level breadcrumb-driven drilldown** in the left column. The right panel keeps the existing tier/mileage-band/matrix editor unchanged.
+Two small changes to `src/pages/dealership/settings/Configuration.tsx` — no DB or schema changes.
 
-### Navigation levels
+### 1. Plans list (Level 2) — collapse by `group`
 
-```text
-Level 1 — Providers
-   ┌──────────────────────────────────────────┐
-   │ 🏢 A-Protect Warranty Corp.   13 plans › │
-   │ 🛡 Infinite Auto Care          6 plans › │
-   │ 🏢 [Other provider]            3 plans › │
-   └──────────────────────────────────────────┘
+When building `plansForActiveProvider`, group products that share a non-empty `coverage_details.group` and surface a single representative card:
 
-Level 2 — Plans for selected provider
-   ‹ All Providers / A-Protect Warranty Corp.
-   ┌──────────────────────────────────────────┐
-   │ Diamond Plus Warranty   VSC   4 tiers ›  │
-   │ Essential Warranty      VSC   6 tiers ›  │
-   │ Driver Program          VSC   2 tiers ›  │
-   │ ...                                      │
-   └──────────────────────────────────────────┘
+- Card title: `"Powertrain Plan"` (capitalized group name + " Plan")
+- Card subtitle: type label (e.g. "Vehicle Service Contract")
+- Tier badge: `"4 tiers"` (count of products in the group)
+- Ungrouped products keep current behavior
 
-Level 3 — Tiers + matrix for selected plan (already built)
-   ‹ A-Protect / Diamond Plus Warranty
-   [ $5,000 / claim ] [ $7,500 / claim ] ...
-   [ Mileage band selector ]
-   [ Pricing matrix with editable cells ]
-```
+The existing `displayName()` helper returns "Powertrain Plan — Bronze" for individual rows; for the grouped card we'll use `"Powertrain Plan"` only.
 
-### UX details
+### 2. Matrix view (Level 3) — merge sibling tiers
 
-- **Breadcrumb bar** at the top of the left column: `‹ Providers / A-Protect / Diamond Plus`. Each crumb is clickable to jump back.
-- **Search bar** is context-aware:
-  - At Provider level → searches provider names.
-  - At Plans level → searches plans within the active provider.
-- **Provider cards** show: company name, total plan count, count by type (e.g. "10 VSC · 1 Tire & Rim").
-- **Plan cards** keep the current style (name, type, tier count badge) but no longer need a provider badge (context is implied).
-- **Back navigation**: a `‹ Back` chip + native browser-style click on the breadcrumb. Selecting a plan slides the right panel into the existing matrix view — no layout shift.
-- **Quick provider switch**: a small dropdown next to the breadcrumb lets you jump between providers without going back to Level 1.
-- The existing **All Providers** filter dropdown is removed (replaced by the drilldown itself).
+When the user opens a grouped plan, instead of loading one product's pricing, build a `Structured` from **all sibling products in the same group**, ordered Bronze → Silver → Gold → Platinum (or original DB order with a tier rank fallback). Each sibling becomes one entry in `structured.tiers`, labeled by its `coverage_details.tier` (e.g. "Bronze", "Silver"). 
 
-### State
+The existing tier-tab UI already handles N tiers, so no UI changes — clicking a tab will display that powertrain product's terms / rows / matrix.
 
-Add two view-mode states; no DB changes:
-- `view: "providers" | "plans"` — controls the left column.
-- `activeProviderId: string | null` — set when entering Level 2.
-- Selecting a plan keeps `view = "plans"` so the user can quickly pick another sibling plan from the same provider.
+### 3. Pricing storage — keyed per product
+
+The cell key currently includes only `tier|band|row|term` indices, scoped per-product (one row in `dealership_product_pricing` per product). For grouped plans we'll preserve that: each tier tab maps back to its underlying product id, and edits write to **that product's** `dealership_product_pricing` row. This keeps existing dealer markups intact and means provider-level data integrity is preserved (each product still owns its own pricing).
+
+Internally we add a `tierProductId[tierIdx]` lookup so save/load picks the correct product's `retail_price` map.
 
 ### Files to change
 
-- `src/pages/dealership/settings/Configuration.tsx` — replace the left column (currently one flat list, lines ~580–627) with the 3-level drilldown described above. Keep the right detail panel and matrix logic untouched.
+- `src/pages/dealership/settings/Configuration.tsx`
+  - Add `groupedPlans` memo that collapses products sharing `group`.
+  - Render grouped cards with "N tiers" badge in the Plans list.
+  - When a grouped plan is selected, build merged `structured.tiers` from all siblings and a parallel `tierProductIds` array.
+  - Update `retailMap` lookup, cell save, and bulk markup actions to write to the active tier's underlying product id.
 
 ### Verification
 
-1. Open `/dealership/settings/configuration` → see provider cards (A-Protect, Infinite Auto Care, …) with plan counts.
-2. Click **A-Protect** → list collapses to A-Protect plans only; breadcrumb shows `‹ Providers / A-Protect`.
-3. Click **Diamond Plus Warranty** → right panel shows existing tiers/mileage bands/matrix.
-4. Click **‹ A-Protect** in breadcrumb → returns to plan list (still A-Protect).
-5. Click **‹ Providers** → returns to provider list.
-6. Use the provider switch dropdown next to the breadcrumb to jump from A-Protect plans → Infinite Auto Care plans without going back to Level 1.
+1. `/dealership/settings/configuration` → A-Protect → Plans list shows **one** "Powertrain Plan" card with "4 tiers" badge (instead of Bronze/Silver/Gold/Platinum as separate cards).
+2. Click "Powertrain Plan" → matrix view shows 4 tier tabs labeled Bronze, Silver, Gold, Platinum.
+3. Switching tabs swaps the terms / rows / cells to that tier's pricing.
+4. Editing a cell on the Gold tab saves to the Powertrain Gold product only — Silver/Bronze/Platinum unaffected.
+5. Other plans without a `group` (Essential, Diamond Plus, Luxury, Tire & Rim, etc.) appear unchanged.
 
