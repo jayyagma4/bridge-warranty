@@ -261,9 +261,22 @@ const Configuration = () => {
     | { kind: "single"; key: string; product: Product; displayName: string; type: string; tierCount: number }
     | { kind: "group"; key: string; group: string; displayName: string; type: string; products: Product[]; tierCount: number };
 
+  const prettyGroupLabel = (grp: string) => {
+    const map: Record<string, string> = {
+      "tire-rim": "Tire & Rim Plan",
+      powertrain: "Powertrain Plan",
+    };
+    if (map[grp]) return map[grp];
+    const titled = grp
+      .split(/[-_\s]+/)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+    return `${titled} Plan`;
+  };
+
   const sortSiblings = (siblings: Product[]) =>
     [...siblings].sort((a, b) => {
-      const order = ["bronze", "silver", "gold", "platinum"];
+      const order = ["bronze", "silver", "gold", "platinum", "essential", "extended", "superior"];
       const ar = order.indexOf((a.coverage_details?.tier || a.tier || "").toLowerCase());
       const br = order.indexOf((b.coverage_details?.tier || b.tier || "").toLowerCase());
       if (ar === -1 && br === -1) return 0;
@@ -283,12 +296,11 @@ const Configuration = () => {
         if (seenGroups.has(grp)) continue;
         seenGroups.add(grp);
         const siblings = sortSiblings(list.filter((x) => (x.coverage_details?.group || x.group) === grp));
-        const groupLabel = grp.charAt(0).toUpperCase() + grp.slice(1);
         entries.push({
           kind: "group",
           key: `group:${activeProviderId}:${grp}`,
           group: grp,
-          displayName: `${groupLabel} Plan`,
+          displayName: prettyGroupLabel(grp),
           type: siblings[0].type,
           products: siblings,
           tierCount: siblings.length,
@@ -329,12 +341,11 @@ const Configuration = () => {
       const grp = selectedPlanKey.split(":")[2];
       const siblings = sortSiblings(list.filter((x) => (x.coverage_details?.group || x.group) === grp));
       if (!siblings.length) return null;
-      const groupLabel = grp.charAt(0).toUpperCase() + grp.slice(1);
       return {
         kind: "group",
         key: selectedPlanKey,
         group: grp,
-        displayName: `${groupLabel} Plan`,
+        displayName: prettyGroupLabel(grp),
         type: siblings[0].type,
         products: siblings,
         tierCount: siblings.length,
