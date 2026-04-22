@@ -176,7 +176,8 @@ const Configuration = () => {
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [providerFilter, setProviderFilter] = useState("all");
+  const [view, setView] = useState<"providers" | "plans">("providers");
+  const [activeProviderId, setActiveProviderId] = useState<string | null>(null);
   const [activeTier, setActiveTier] = useState(0);
   const [activeBand, setActiveBand] = useState(0);
   const [editingCell, setEditingCell] = useState<string | null>(null);
