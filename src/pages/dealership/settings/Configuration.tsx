@@ -707,7 +707,7 @@ const Configuration = () => {
           {view === "plans" && (
             <Select
               value={activeProviderId || ""}
-              onValueChange={(v) => { setActiveProviderId(v); setSelectedProduct(null); setSearch(""); }}
+              onValueChange={(v) => { setActiveProviderId(v); setSelectedPlanKey(null); setSearch(""); }}
             >
               <SelectTrigger className="w-full sm:w-[240px]">
                 <SelectValue placeholder="Switch provider" />
