@@ -174,7 +174,8 @@ const Configuration = () => {
   const [pricingConfigs, setPricingConfigs] = useState<Record<string, PricingConfig>>({});
   const [confidentialityEnabled, setConfidentialityEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  // selectedPlanKey is either "prod:<productId>" or "group:<providerId>:<groupName>"
+  const [selectedPlanKey, setSelectedPlanKey] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"providers" | "plans">("providers");
   const [activeProviderId, setActiveProviderId] = useState<string | null>(null);
@@ -255,33 +256,151 @@ const Configuration = () => {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [providerGroups, providers, search, view]);
 
-  const plansForActiveProvider = useMemo(() => {
+  // ── Plan entries (collapse products sharing coverage_details.group) ──
+  type PlanEntry =
+    | { kind: "single"; key: string; product: Product; displayName: string; type: string; tierCount: number }
+    | { kind: "group"; key: string; group: string; displayName: string; type: string; products: Product[]; tierCount: number };
+
+  const sortSiblings = (siblings: Product[]) =>
+    [...siblings].sort((a, b) => {
+      const order = ["bronze", "silver", "gold", "platinum"];
+      const ar = order.indexOf((a.coverage_details?.tier || a.tier || "").toLowerCase());
+      const br = order.indexOf((b.coverage_details?.tier || b.tier || "").toLowerCase());
+      if (ar === -1 && br === -1) return 0;
+      if (ar === -1) return 1;
+      if (br === -1) return -1;
+      return ar - br;
+    });
+
+  const plansForActiveProvider = useMemo<PlanEntry[]>(() => {
     if (!activeProviderId) return [];
     const list = providerGroups[activeProviderId] || [];
-    return list.filter((p) => !search || displayName(p).toLowerCase().includes(search.toLowerCase()));
+    const seenGroups = new Set<string>();
+    const entries: PlanEntry[] = [];
+    for (const p of list) {
+      const grp = (p.coverage_details?.group || p.group || "").toString().trim();
+      if (grp) {
+        if (seenGroups.has(grp)) continue;
+        seenGroups.add(grp);
+        const siblings = sortSiblings(list.filter((x) => (x.coverage_details?.group || x.group) === grp));
+        const groupLabel = grp.charAt(0).toUpperCase() + grp.slice(1);
+        entries.push({
+          kind: "group",
+          key: `group:${activeProviderId}:${grp}`,
+          group: grp,
+          displayName: `${groupLabel} Plan`,
+          type: siblings[0].type,
+          products: siblings,
+          tierCount: siblings.length,
+        });
+      } else {
+        const s = extractStructured(p.pricing);
+        entries.push({
+          kind: "single",
+          key: `prod:${p.id}`,
+          product: p,
+          displayName: displayName(p),
+          type: p.type,
+          tierCount: s.tiers.length || 1,
+        });
+      }
+    }
+    return entries.filter((e) => !search || e.displayName.toLowerCase().includes(search.toLowerCase()));
   }, [providerGroups, activeProviderId, search]);
 
-  const selectedProductData = products.find((p) => p.id === selectedProduct);
-  const structured: Structured = useMemo(
-    () => (selectedProductData ? extractStructured(selectedProductData.pricing) : { tiers: [] }),
-    [selectedProductData],
-  );
+  const selectedPlanEntry = useMemo<PlanEntry | null>(() => {
+    if (!selectedPlanKey || !activeProviderId) return null;
+    const list = providerGroups[activeProviderId] || [];
+    if (selectedPlanKey.startsWith("prod:")) {
+      const id = selectedPlanKey.slice(5);
+      const product = list.find((p) => p.id === id);
+      if (!product) return null;
+      const s = extractStructured(product.pricing);
+      return {
+        kind: "single",
+        key: selectedPlanKey,
+        product,
+        displayName: displayName(product),
+        type: product.type,
+        tierCount: s.tiers.length || 1,
+      };
+    }
+    if (selectedPlanKey.startsWith("group:")) {
+      const grp = selectedPlanKey.split(":")[2];
+      const siblings = sortSiblings(list.filter((x) => (x.coverage_details?.group || x.group) === grp));
+      if (!siblings.length) return null;
+      const groupLabel = grp.charAt(0).toUpperCase() + grp.slice(1);
+      return {
+        kind: "group",
+        key: selectedPlanKey,
+        group: grp,
+        displayName: `${groupLabel} Plan`,
+        type: siblings[0].type,
+        products: siblings,
+        tierCount: siblings.length,
+      };
+    }
+    return null;
+  }, [selectedPlanKey, activeProviderId, providerGroups]);
 
-  // Reset tier/band when product changes
+  const { structured, tierProductIds, tierStorageIdx } = useMemo<{
+    structured: Structured;
+    tierProductIds: string[];
+    tierStorageIdx: number[];
+  }>(() => {
+    if (!selectedPlanEntry) return { structured: { tiers: [] }, tierProductIds: [], tierStorageIdx: [] };
+    if (selectedPlanEntry.kind === "single") {
+      const s = extractStructured(selectedPlanEntry.product.pricing);
+      return {
+        structured: s,
+        tierProductIds: s.tiers.map(() => selectedPlanEntry.product.id),
+        tierStorageIdx: s.tiers.map((_, i) => i),
+      };
+    }
+    const tiers: StructuredTier[] = [];
+    const ids: string[] = [];
+    const storageIdx: number[] = [];
+    for (const p of selectedPlanEntry.products) {
+      const s = extractStructured(p.pricing);
+      const t0 = s.tiers[0];
+      if (!t0) continue;
+      const tierLabel = (p.coverage_details?.tier || p.tier || t0.label) as string;
+      tiers.push({ ...t0, label: tierLabel });
+      ids.push(p.id);
+      storageIdx.push(0);
+    }
+    return { structured: { tiers }, tierProductIds: ids, tierStorageIdx: storageIdx };
+  }, [selectedPlanEntry]);
+
+  const selectedProductData: Product | undefined =
+    selectedPlanEntry?.kind === "single"
+      ? selectedPlanEntry.product
+      : selectedPlanEntry?.kind === "group"
+        ? selectedPlanEntry.products[0]
+        : undefined;
+
+  // Reset tier/band when plan changes
   useEffect(() => {
     setActiveTier(0);
     setActiveBand(0);
     setEditingCell(null);
-  }, [selectedProduct]);
+  }, [selectedPlanKey]);
 
   const currentTier: StructuredTier | undefined = structured.tiers[activeTier];
   const hasBands = !!currentTier?.mileageBands?.length;
 
+  const activeTierProductId: string | undefined = tierProductIds[activeTier];
+  const activeTierStorageIdx: number = tierStorageIdx[activeTier] ?? activeTier;
+
   const retailMap: Record<string, number> = useMemo(() => {
-    if (!selectedProductData) return {};
-    const raw = pricingConfigs[selectedProductData.id]?.retail_price || {};
-    return migrateLegacyKeys(raw as Record<string, number>, structured);
-  }, [pricingConfigs, selectedProductData, structured]);
+    if (!activeTierProductId || !currentTier) return {};
+    const raw = pricingConfigs[activeTierProductId]?.retail_price || {};
+    const singleTierStruct: Structured = { tiers: [currentTier] };
+    return migrateLegacyKeys(raw as Record<string, number>, singleTierStruct);
+  }, [pricingConfigs, activeTierProductId, currentTier]);
+
+  const storageKey = (bandIdx: number | null, rowIdx: number, termIdx: number) =>
+    cellKey(activeTierStorageIdx, bandIdx, rowIdx, termIdx);
 
   const handleToggleConfidentiality = async (enabled: boolean) => {
     setConfidentialityEnabled(enabled);
@@ -300,27 +419,27 @@ const Configuration = () => {
     });
   };
 
-  const persistRetail = async (newRetail: Record<string, number>) => {
-    if (!selectedProductData || !dealershipId) return;
-    const existing = pricingConfigs[selectedProductData.id];
+  const persistRetail = async (productId: string, newRetail: Record<string, number>) => {
+    if (!dealershipId) return;
+    const existing = pricingConfigs[productId];
     if (existing) {
       await supabase
         .from("dealership_product_pricing")
         .update({ retail_price: newRetail, confidentiality_enabled: confidentialityEnabled })
         .eq("dealership_id", dealershipId)
-        .eq("product_id", selectedProductData.id);
+        .eq("product_id", productId);
     } else {
       await supabase.from("dealership_product_pricing").insert({
         dealership_id: dealershipId,
-        product_id: selectedProductData.id,
+        product_id: productId,
         retail_price: newRetail,
         confidentiality_enabled: confidentialityEnabled,
       });
     }
     setPricingConfigs((prev) => ({
       ...prev,
-      [selectedProductData.id]: {
-        product_id: selectedProductData.id,
+      [productId]: {
+        product_id: productId,
         retail_price: newRetail,
         confidentiality_enabled: confidentialityEnabled,
       },
@@ -328,28 +447,28 @@ const Configuration = () => {
   };
 
   const saveCell = async (key: string, value: number) => {
-    if (!selectedProductData) return;
+    if (!activeTierProductId) return;
     setSavingKey(key);
     const newRetail = { ...retailMap, [key]: value };
-    await persistRetail(newRetail);
+    await persistRetail(activeTierProductId, newRetail);
     setSavingKey(null);
     setEditingCell(null);
     toast({ title: "Price saved" });
   };
 
   const clearCell = async (key: string) => {
-    if (!selectedProductData) return;
+    if (!activeTierProductId) return;
     setSavingKey(key);
     const newRetail = { ...retailMap };
     delete newRetail[key];
-    await persistRetail(newRetail);
+    await persistRetail(activeTierProductId, newRetail);
     setSavingKey(null);
     setEditingCell(null);
     toast({ title: "Custom price cleared" });
   };
 
   const applyBulkMarkupToTier = async () => {
-    if (!currentTier || !selectedProductData) return;
+    if (!currentTier || !activeTierProductId) return;
     const pct = parseFloat(bulkPercent);
     if (isNaN(pct) || pct < 0) {
       toast({ title: "Invalid markup", description: "Enter a positive number.", variant: "destructive" });
@@ -361,34 +480,31 @@ const Configuration = () => {
 
     const fillFromCost = (cost: any, key: string) => {
       if (!isNumericCost(cost) || cost <= 0) return;
-      if (newRetail[key] != null) return; // only fill empty
+      if (newRetail[key] != null) return;
       newRetail[key] = Math.round(cost * factor);
       count++;
     };
 
     if (hasBands && currentTier.mileageBands) {
-      // Base price cells per band+term
       currentTier.mileageBands.forEach((band, bIdx) => {
         currentTier.terms.forEach((_t, tIdx) => {
-          const baseRowIdx = -1; // base row index = -1 sentinel for band-base
-          fillFromCost(band.values[tIdx], cellKey(activeTier, bIdx, baseRowIdx, tIdx));
+          fillFromCost(band.values[tIdx], storageKey(bIdx, -1, tIdx));
         });
       });
-      // Add-on rows (shared across bands → bandIdx = null)
       currentTier.rows.forEach((row, rIdx) => {
         currentTier.terms.forEach((_t, tIdx) => {
-          fillFromCost(row.values[tIdx], cellKey(activeTier, null, rIdx, tIdx));
+          fillFromCost(row.values[tIdx], storageKey(null, rIdx, tIdx));
         });
       });
     } else {
       currentTier.rows.forEach((row, rIdx) => {
         currentTier.terms.forEach((_t, tIdx) => {
-          fillFromCost(row.values[tIdx], cellKey(activeTier, null, rIdx, tIdx));
+          fillFromCost(row.values[tIdx], storageKey(null, rIdx, tIdx));
         });
       });
     }
 
-    await persistRetail(newRetail);
+    await persistRetail(activeTierProductId, newRetail);
     toast({ title: "Bulk markup applied", description: `Filled ${count} empty cells with +${pct}% markup.` });
   };
 
@@ -591,7 +707,7 @@ const Configuration = () => {
           {view === "plans" && (
             <Select
               value={activeProviderId || ""}
-              onValueChange={(v) => { setActiveProviderId(v); setSelectedProduct(null); setSearch(""); }}
+              onValueChange={(v) => { setActiveProviderId(v); setSelectedPlanKey(null); setSearch(""); }}
             >
               <SelectTrigger className="w-full sm:w-[240px]">
                 <SelectValue placeholder="Switch provider" />
@@ -608,7 +724,7 @@ const Configuration = () => {
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm flex-wrap">
           <button
-            onClick={() => { setView("providers"); setActiveProviderId(null); setSelectedProduct(null); setSearch(""); }}
+            onClick={() => { setView("providers"); setActiveProviderId(null); setSelectedPlanKey(null); setSearch(""); }}
             className={cn(
               "px-2 py-1 rounded-md hover:bg-muted transition-colors",
               view === "providers" ? "font-semibold text-foreground" : "text-muted-foreground",
@@ -620,21 +736,21 @@ const Configuration = () => {
             <>
               <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50" />
               <button
-                onClick={() => { setSelectedProduct(null); }}
+              onClick={() => { setSelectedPlanKey(null); }}
                 className={cn(
                   "px-2 py-1 rounded-md hover:bg-muted transition-colors",
-                  !selectedProduct ? "font-semibold text-foreground" : "text-muted-foreground",
+                  !selectedPlanKey ? "font-semibold text-foreground" : "text-muted-foreground",
                 )}
               >
                 {providers[activeProviderId] || "Provider"}
               </button>
             </>
           )}
-          {view === "plans" && selectedProductData && (
+          {view === "plans" && selectedPlanEntry && (
             <>
               <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50" />
               <span className="px-2 py-1 font-semibold text-foreground">
-                {displayName(selectedProductData)}
+                {selectedPlanEntry.displayName}
               </span>
             </>
           )}
@@ -664,7 +780,7 @@ const Configuration = () => {
                         onClick={() => {
                           setActiveProviderId(g.id);
                           setView("plans");
-                          setSelectedProduct(null);
+                          setSelectedPlanKey(null);
                           setSearch("");
                         }}
                         className="w-full text-left rounded-xl px-4 py-3.5 transition-all duration-150 hover:bg-muted/60 bg-card border border-transparent hover:border-primary/20 hover:shadow-sm"
@@ -714,15 +830,15 @@ const Configuration = () => {
                   </p>
                 </div>
                 <div className="space-y-1 max-h-[calc(100vh-360px)] overflow-y-auto pr-1">
-                  {plansForActiveProvider.map((p) => {
-                    const s = extractStructured(p.pricing);
+                  {plansForActiveProvider.map((entry) => {
+                    const isSelected = selectedPlanKey === entry.key;
                     return (
                       <button
-                        key={p.id}
-                        onClick={() => setSelectedProduct(p.id)}
+                        key={entry.key}
+                        onClick={() => setSelectedPlanKey(entry.key)}
                         className={cn(
                           "w-full text-left rounded-xl px-4 py-3 transition-all duration-150 hover:bg-muted/60",
-                          selectedProduct === p.id
+                          isSelected
                             ? "bg-primary/10 border border-primary/30 shadow-sm"
                             : "bg-card border border-transparent",
                         )}
@@ -731,21 +847,21 @@ const Configuration = () => {
                           <div className="min-w-0 flex items-center gap-2">
                             <Shield className={cn(
                               "w-4 h-4 shrink-0",
-                              selectedProduct === p.id ? "text-primary" : "text-muted-foreground/60",
+                              isSelected ? "text-primary" : "text-muted-foreground/60",
                             )} />
                             <div className="min-w-0">
-                              <p className="font-semibold text-sm truncate">{displayName(p)}</p>
-                              <p className="text-xs text-muted-foreground truncate">{typeLabel(p.type)}</p>
+                              <p className="font-semibold text-sm truncate">{entry.displayName}</p>
+                              <p className="text-xs text-muted-foreground truncate">{typeLabel(entry.type)}</p>
                             </div>
                           </div>
                           <ChevronRight className={cn(
                             "w-4 h-4 shrink-0",
-                            selectedProduct === p.id ? "text-primary" : "text-muted-foreground/40",
+                            isSelected ? "text-primary" : "text-muted-foreground/40",
                           )} />
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5 mt-1.5 pl-6">
                           <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                            {s.tiers.length} tier{s.tiers.length === 1 ? "" : "s"}
+                            {entry.tierCount} tier{entry.tierCount === 1 ? "" : "s"}
                           </Badge>
                         </div>
                       </button>
@@ -781,7 +897,7 @@ const Configuration = () => {
                         <DollarSign className="w-6 h-6 text-primary" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-xl font-bold">{displayName(selectedProductData)}</h3>
+                        <h3 className="text-xl font-bold">{selectedPlanEntry?.displayName ?? displayName(selectedProductData)}</h3>
                         <p className="text-sm text-muted-foreground mt-0.5">
                           {typeLabel(selectedProductData.type)} • {providers[selectedProductData.provider_id] || "Unknown Provider"}
                         </p>
