@@ -1,51 +1,46 @@
 
 
-# Group Powertrain Plans by Their Shared "powertrain" Group
+# Group Tire & Rim Products into One Plan with 3 Tiers
 
 ## Problem
 
-The 4 A-Protect Powertrain products (Bronze, Silver, Gold, Platinum) appear as 4 separate rows in the Plans list. They share `coverage_details.group = "powertrain"`, so they should collapse into **one** card called "Powertrain Plan" with **4 tiers** — Bronze / Silver / Gold / Platinum — selectable inside the matrix view (same UX as the existing per-claim-amount tier tabs).
+The 3 A-Protect Tire & Rim products (Essential, Extended, Superior Protection) appear as 3 separate cards in the Plans list. They should collapse into **one** "Tire & Rim Plan" card with **3 tiers** — Essential / Extended / Superior — exactly like the Powertrain grouping.
+
+The grouping logic in `Configuration.tsx` already supports any product with `coverage_details.group` set. The Tire & Rim products simply don't have `group` or `tier` populated in the database.
 
 ## Solution
 
-Two small changes to `src/pages/dealership/settings/Configuration.tsx` — no DB or schema changes.
+Two small changes — no UI rewrite needed.
 
-### 1. Plans list (Level 2) — collapse by `group`
+### 1. Database backfill (migration)
 
-When building `plansForActiveProvider`, group products that share a non-empty `coverage_details.group` and surface a single representative card:
+Update the 3 Tire & Rim products to add `group` and `tier` to their `coverage_details`:
 
-- Card title: `"Powertrain Plan"` (capitalized group name + " Plan")
-- Card subtitle: type label (e.g. "Vehicle Service Contract")
-- Tier badge: `"4 tiers"` (count of products in the group)
-- Ungrouped products keep current behavior
+| Product | group | tier |
+|---|---|---|
+| Tire & Rim Essential Protection | `tire-rim` | `Essential` |
+| Tire & Rim Extended Protection | `tire-rim` | `Extended` |
+| Tire & Rim Superior Protection | `tire-rim` | `Superior` |
 
-The existing `displayName()` helper returns "Powertrain Plan — Bronze" for individual rows; for the grouped card we'll use `"Powertrain Plan"` only.
+This uses `jsonb_set` to merge the new fields without disturbing any other coverage data (slug, includes, vehicleClasses, etc.).
 
-### 2. Matrix view (Level 3) — merge sibling tiers
+### 2. Configuration.tsx — nicer labels and sort order
 
-When the user opens a grouped plan, instead of loading one product's pricing, build a `Structured` from **all sibling products in the same group**, ordered Bronze → Silver → Gold → Platinum (or original DB order with a tier rank fallback). Each sibling becomes one entry in `structured.tiers`, labeled by its `coverage_details.tier` (e.g. "Bronze", "Silver"). 
+Two tiny adjustments to `src/pages/dealership/settings/Configuration.tsx`:
 
-The existing tier-tab UI already handles N tiers, so no UI changes — clicking a tab will display that powertrain product's terms / rows / matrix.
-
-### 3. Pricing storage — keyed per product
-
-The cell key currently includes only `tier|band|row|term` indices, scoped per-product (one row in `dealership_product_pricing` per product). For grouped plans we'll preserve that: each tier tab maps back to its underlying product id, and edits write to **that product's** `dealership_product_pricing` row. This keeps existing dealer markups intact and means provider-level data integrity is preserved (each product still owns its own pricing).
-
-Internally we add a `tierProductId[tierIdx]` lookup so save/load picks the correct product's `retail_price` map.
+- **Label formatter**: replace the simple `grp.charAt(0).toUpperCase() + grp.slice(1)` with a small map so `"tire-rim"` renders as `"Tire & Rim Plan"` (and `"powertrain"` stays as `"Powertrain Plan"`). Falls back to title-cased group name for unknown groups.
+- **Sort order in `sortSiblings`**: extend the rank list to include Essential → Extended → Superior so the tier tabs appear in the intended order.
 
 ### Files to change
 
-- `src/pages/dealership/settings/Configuration.tsx`
-  - Add `groupedPlans` memo that collapses products sharing `group`.
-  - Render grouped cards with "N tiers" badge in the Plans list.
-  - When a grouped plan is selected, build merged `structured.tiers` from all siblings and a parallel `tierProductIds` array.
-  - Update `retailMap` lookup, cell save, and bulk markup actions to write to the active tier's underlying product id.
+- New migration: backfill `coverage_details.group` and `coverage_details.tier` on the 3 Tire & Rim products.
+- `src/pages/dealership/settings/Configuration.tsx`: extend `sortSiblings` rank order and add a `prettyGroupLabel()` helper used in both `plansForActiveProvider` and the selected-plan branch.
 
 ### Verification
 
-1. `/dealership/settings/configuration` → A-Protect → Plans list shows **one** "Powertrain Plan" card with "4 tiers" badge (instead of Bronze/Silver/Gold/Platinum as separate cards).
-2. Click "Powertrain Plan" → matrix view shows 4 tier tabs labeled Bronze, Silver, Gold, Platinum.
-3. Switching tabs swaps the terms / rows / cells to that tier's pricing.
-4. Editing a cell on the Gold tab saves to the Powertrain Gold product only — Silver/Bronze/Platinum unaffected.
-5. Other plans without a `group` (Essential, Diamond Plus, Luxury, Tire & Rim, etc.) appear unchanged.
+1. `/dealership/settings/configuration` → A-Protect → Plans list shows **one** "Tire & Rim Plan" card with "3 tiers" badge instead of 3 separate cards.
+2. Click "Tire & Rim Plan" → matrix view shows 3 tier tabs in order: Essential, Extended, Superior.
+3. Switching tabs swaps the pricing matrix to that tier's data.
+4. Editing a cell on the Superior tab saves only to the Superior product.
+5. Powertrain Plan still groups correctly (regression check).
 
